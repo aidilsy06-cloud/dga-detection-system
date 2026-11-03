@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}User Access Control & Audit Trail{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- Header -->
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-1"><i class="bi bi-shield-lock-fill text-purple me-2"></i>User Access Control (RBAC) & Immutable Audit Trail</h4>
+            <p class="text-muted small mb-0">Pemisahan hak akses Security Analyst vs Administrator dan rekam jejak kepatuhan audit keamanan siber (Compliance Log)</p>
+        </div>
+        <div>
+            <span class="badge bg-dark border border-secondary text-info mono">ISO 27001 / SOC 2 Compliance Ready</span>
+        </div>
+    </div>
+
+    <!-- RBAC Users Card -->
+    <div class="col-lg-4">
+        <div class="card-soc mb-3">
+            <div class="card-header-soc">
+                <div>
+                    <i class="bi bi-people-fill text-cyan me-2"></i>Daftar Pengguna Berbasis Peran (RBAC)
+                </div>
+                <span class="badge bg-dark border border-secondary text-muted">{{ users | length }} Akun</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-soc mb-0">
+                        <thead>
+                            <tr>
+                                <th>Pengguna</th>
+                                <th>Peran (Role)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-white small">{{ u['full_name'] }}</div>
+                                    <div class="text-muted small mono" style="font-size: 0.72rem;">@{{ u['username'] }}</div>
+                                </td>
+                                <td>
+                                    {% if u['role'] == 'admin' %}
+                                        <span class="badge bg-purple text-white">Administrator</span>
+                                    {% else %}
+                                        <span class="badge bg-cyan text-dark fw-bold">SOC Analyst</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-success-subtle text-success small">{{ u['status'] }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role Permissions Matrix Info -->
+        <div class="card-soc p-3">
+            <h6 class="text-white fw-bold small"><i class="bi bi-key-fill text-warning me-2"></i>Matriks Hak Akses Sistem:</h6>
+            <ul class="text-muted small ps-3 mb-0">
+                <li><strong class="text-cyan">Security Analyst (Front-End):</strong> Akses dashboard visual, pemindai mandiri (single scan), inspeksi batch log, live stream, dan unduh laporan investigasi.</li>
+                <li class="mt-2"><strong class="text-purple">Administrator (Back-End):</strong> Akses tuning threshold slider, retrain model ML, ekspor aturan firewall/sinkhole, kelola dataset, generate API Key, dan pantau status server.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Immutable Audit Trail Table Card -->
+    <div class="col-lg-8">
+        <div class="card-soc">
+            <div class="card-header-soc">
+                <div>
+                    <i class="bi bi-journal-text text-warning me-2"></i>Immutable Audit Trail (Log Aktivitas Sistem)
+                </div>
+                <div class="input-group input-group-sm" style="max-width: 200px;">
+                    <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" id="auditSearch" class="form-control bg-dark border-secondary text-white" placeholder="Cari aktivitas..." onkeyup="filterAudit()">
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 520px;">
+                    <table class="table table-soc table-hover mb-0" id="auditTable">
+                        <thead class="sticky-top">
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Pengguna</th>
+                                <th>Aksi (Action)</th>
+                                <th>Rincian Aktivitas (Details)</th>
+                                <th>IP Klien</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in audit_logs %}
+                            <tr class="audit-row">
+                                <td class="mono small text-muted">{{ a['timestamp'] }}</td>
+                                <td>
+                                    <span class="badge {% if a['role'] == 'admin' %}bg-purple text-white{% else %}bg-dark border border-secondary text-info{% endif %}">
+                                        {{ a['user'] }}
+                                    </span>
+                                </td>
+                                <td class="fw-semibold text-light small">{{ a['action'] }}</td>
+                                <td class="small text-muted">{{ a['details'] }}</td>
+                                <td class="mono small text-muted">{{ a['ip_address'] }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">Belum ada riwayat audit trail.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterAudit() {
+        const query = document.getElementById('auditSearch').value.toLowerCase();
+        const rows = document.querySelectorAll('.audit-row');
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(query) ? '' : 'none';
+        });
+    }
+</script>
+{% endblock %}

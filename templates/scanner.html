@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+
+{% block title %}Single Domain Scanner{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- Left Column: Input Form & Test Samples -->
+    <div class="col-lg-5">
+        <div class="card-soc mb-3">
+            <div class="card-header-soc">
+                <div>
+                    <i class="bi bi-search text-cyan me-2"></i>Pemindai Domain Mandiri (Instant Scanner)
+                </div>
+                <span class="badge bg-dark border border-secondary text-info">Analisis Real-Time</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">
+                    Alat investigasi cepat bagi analis SOC untuk menguji nama domain mencurigakan. Sistem akan mengekstraksi properti leksikal dan melakukan inferensi dengan model Random Forest.
+                </p>
+
+                <form id="singleScanForm" class="mb-3">
+                    <div class="mb-3">
+                        <label class="form-label text-light fw-semibold">Masukkan Nama Domain / FQDN:</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-globe2"></i></span>
+                            <input type="text" id="domainInput" name="domain" class="form-control bg-dark border-secondary text-white mono" 
+                                   placeholder="misal: xkq981mbpzwt74v.biz atau kemkes.go.id" required autofocus>
+                        </div>
+                        <div class="form-text text-muted small">Mendukung domain standar, subdomain, atau FQDN tanpa protokol http/https.</div>
+                    </div>
+
+                    <button type="submit" id="btnScan" class="btn btn-cyan w-100 py-2">
+                        <i class="bi bi-shield-shaded me-1"></i>Ekstraksi Fitur & Deteksi Ancaman
+                    </button>
+                </form>
+
+                <!-- Quick Test Samples -->
+                <div class="border-top border-secondary pt-3 mt-3">
+                    <label class="text-muted small fw-bold mb-2 d-block">CONTOH SAMPEL UJI CEPAT:</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-success sample-btn" data-domain="bca.co.id">
+                            <i class="bi bi-check2 me-1"></i>bca.co.id (Legit)
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-success sample-btn" data-domain="kemkes.go.id">
+                            <i class="bi bi-check2 me-1"></i>kemkes.go.id (Legit)
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger sample-btn" data-domain="xkq981mbpzwt74v.biz">
+                            <i class="bi bi-bug me-1"></i>xkq981mbpzwt74v.biz (DGA)
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger sample-btn" data-domain="werbvnm1290zxc.ru">
+                            <i class="bi bi-bug me-1"></i>werbvnm1290zxc.ru (DGA)
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger sample-btn" data-domain="suppobox9912azq.info">
+                            <i class="bi bi-bug me-1"></i>suppobox9912azq.info (DGA)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Card -->
+        <div class="card-soc p-3">
+            <h6 class="text-white fw-bold small"><i class="bi bi-info-circle-fill text-info me-2"></i>Tentang Ekstraksi Fitur Leksikal:</h6>
+            <ul class="text-muted small ps-3 mb-0">
+                <li><strong class="text-light">Panjang Domain:</strong> Domain DGA seringkali memiliki jumlah karakter lebih panjang untuk meminimalkan collision.</li>
+                <li><strong class="text-light">Rasio Vokal & Angka:</strong> DGA menghasilkan rasio huruf vokal abnormal rendah dan rasio angka tinggi.</li>
+                <li><strong class="text-light">Shannon Entropy:</strong> Mengukur keacakan distribusi bit/karakter. Nilai entropi > 3.2 mengindikasikan string pseudo-random.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Right Column: Live Result & Lexical Breakdown -->
+    <div class="col-lg-7">
+        <!-- Initial Placeholder State -->
+        <div id="scanPlaceholder" class="card-soc text-center py-5">
+            <div class="py-5">
+                <i class="bi bi-radar text-secondary" style="font-size: 3.5rem;"></i>
+                <h5 class="text-light mt-3">Menunggu Input Domain</h5>
+                <p class="text-muted small">Ketik nama domain di panel sebelah kiri atau klik sampel uji untuk melihat hasil ekstraksi leksikal dan inferensi AI.</p>
+            </div>
+        </div>
+
+        <!-- Scan Result Card (Initially Hidden) -->
+        <div id="scanResultContainer" class="d-none">
+            <!-- Verdict Banner -->
+            <div id="verdictBanner" class="card-soc p-4 mb-3 border-2">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <span id="verdictBadge" class="badge px-3 py-2 fs-6 mb-2">--</span>
+                        <h4 id="resultDomain" class="mono text-white fw-bold mb-1">domain.com</h4>
+                        <div id="verdictDesc" class="text-muted small">Hasil klasifikasi model Random Forest</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="metric-label">Confidence Score</div>
+                        <div id="confidenceVal" class="metric-value text-cyan">0.0%</div>
+                        <div class="small text-muted mono">Threshold: <span class="text-warning">{{ current_threshold }}</span></div>
+                    </div>
+                </div>
+
+                <!-- Probability Bar -->
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span>Probabilitas Legit</span>
+                        <span id="probLabel" class="fw-bold text-white">Probabilitas DGA: 0%</span>
+                    </div>
+                    <div class="progress bg-dark" style="height: 10px;">
+                        <div id="probBar" class="progress-bar bg-cyan" style="width: 50%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Lexical Feature Breakdown Cards -->
+            <div class="card-soc mb-3">
+                <div class="card-header-soc">
+                    <div>
+                        <i class="bi bi-braces-asterisk text-warning me-2"></i>Ekstraksi Properti Leksikal (Feature Engineering)
+                    </div>
+                    <span class="badge bg-dark border border-secondary text-muted">Formula Otomatis</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- Feature 1: Domain Length -->
+                        <div class="col-6 col-md-3">
+                            <div class="border border-secondary rounded p-3 text-center bg-dark">
+                                <div class="metric-label">Panjang (Length)</div>
+                                <div id="featLength" class="fs-3 fw-bold text-white mono my-1">--</div>
+                                <div class="small text-muted" style="font-size: 0.7rem;">Karakter</div>
+                            </div>
+                        </div>
+
+                        <!-- Feature 2: Vowel Ratio -->
+                        <div class="col-6 col-md-3">
+                            <div class="border border-secondary rounded p-3 text-center bg-dark">
+                                <div class="metric-label">Rasio Vokal</div>
+                                <div id="featVowel" class="fs-3 fw-bold text-white mono my-1">--</div>
+                                <div class="small text-muted" style="font-size: 0.7rem;">Huruf vokal / len</div>
+                            </div>
+                        </div>
+
+                        <!-- Feature 3: Digit Ratio -->
+                        <div class="col-6 col-md-3">
+                            <div class="border border-secondary rounded p-3 text-center bg-dark">
+                                <div class="metric-label">Rasio Angka</div>
+                                <div id="featDigit" class="fs-3 fw-bold text-white mono my-1">--</div>
+                                <div class="small text-muted" style="font-size: 0.7rem;">Digit 0-9 / len</div>
+                            </div>
+                        </div>
+
+                        <!-- Feature 4: Shannon Entropy -->
+                        <div class="col-6 col-md-3">
+                            <div class="border border-secondary rounded p-3 text-center bg-dark">
+                                <div class="metric-label">Shannon Entropy</div>
+                                <div id="featEntropy" class="fs-3 fw-bold text-warning mono my-1">--</div>
+                                <div class="small text-muted" style="font-size: 0.7rem;">Skor keacakan (H)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mitigation Action Card -->
+            <div class="card-soc p-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h6 class="text-white fw-bold mb-1"><i class="bi bi-shield-fill-check text-info me-2"></i>Tindakan Mitigasi Otomatis (Response Action):</h6>
+                        <div id="mitigationText" class="text-muted small">Status tindakan mitigasi</div>
+                    </div>
+                    <div id="actionControls">
+                        <!-- dynamic action button -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const form = document.getElementById('singleScanForm');
+    const domainInput = document.getElementById('domainInput');
+    const btnScan = document.getElementById('btnScan');
+    const placeholder = document.getElementById('scanPlaceholder');
+    const container = document.getElementById('scanResultContainer');
+
+    // Sample buttons click handler
+    document.querySelectorAll('.sample-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            domainInput.value = this.getAttribute('data-domain');
+            form.dispatchEvent(new Event('submit'));
+        });
+    });
+
+    form.onsubmit = async function(e) {
+        e.preventDefault();
+        const domain = domainInput.value.trim();
+        if (!domain) return;
+
+        btnScan.disabled = true;
+        btnScan.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Menganalisis domain...`;
+
+        try {
+            const formData = new FormData();
+            formData.append('domain', domain);
+
+            const res = await fetch('/api/scan', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if (res.ok) {
+                renderResult(data);
+            } else {
+                alert('Error: ' + (data.error || 'Terjadi kesalahan saat memproses domain.'));
+            }
+        } catch (err) {
+            alert('Gagal menghubungi server: ' + err.message);
+        } finally {
+            btnScan.disabled = false;
+            btnScan.innerHTML = `<i class="bi bi-shield-shaded me-1"></i>Ekstraksi Fitur & Deteksi Ancaman`;
+        }
+    };
+
+    function renderResult(data) {
+        placeholder.classList.add('d-none');
+        container.classList.remove('d-none');
+
+        document.getElementById('resultDomain').innerText = data.domain;
+        document.getElementById('confidenceVal').innerText = data.confidence + '%';
+        
+        const isDGA = (data.classification === 'DGA');
+        const probPct = (data.probability * 100).toFixed(1);
+        
+        // Probability bar
+        const probBar = document.getElementById('probBar');
+        probBar.style.width = probPct + '%';
+        document.getElementById('probLabel').innerText = `Probabilitas DGA: ${probPct}% (Ambang: ${(data.threshold * 100).toFixed(0)}%)`;
+
+        // Features
+        document.getElementById('featLength').innerText = data.features.length;
+        document.getElementById('featVowel').innerText = (data.features.vowel_ratio * 100).toFixed(1) + '%';
+        document.getElementById('featDigit').innerText = (data.features.digit_ratio * 100).toFixed(1) + '%';
+        document.getElementById('featEntropy').innerText = data.features.shannon_entropy;
+
+        const banner = document.getElementById('verdictBanner');
+        const badge = document.getElementById('verdictBadge');
+        const desc = document.getElementById('verdictDesc');
+        const mitText = document.getElementById('mitigationText');
+        const actControls = document.getElementById('actionControls');
+
+        if (isDGA) {
+            banner.className = 'card-soc p-4 mb-3 border-2 border-danger bg-danger-subtle';
+            badge.className = 'badge bg-danger text-white px-3 py-2 fs-6 mb-2';
+            badge.innerHTML = '<i class="bi bi-radioactive me-1"></i>TERDETEKSI SEBAGAI DGA (MALWARE C2 THREAT)';
+            desc.innerHTML = `Domain ini terindikasi kuat sebagai jalur komunikasi Command and Control botnet. Probabilitas (${probPct}%) melampaui threshold ${data.threshold}.`;
+            probBar.className = 'progress-bar bg-danger';
+            
+            mitText.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-x-circle-fill me-1"></i>Domain telah dicatat dalam Audit Log dan dialihkan ke DNS Sinkhole (10.10.10.254).</span>`;
+            actControls.innerHTML = `<a href="/admin/firewall" class="btn btn-sm btn-danger"><i class="bi bi-fire me-1"></i>Lihat Aturan Firewall</a>`;
+        } else {
+            banner.className = 'card-soc p-4 mb-3 border-2 border-success bg-success-subtle';
+            badge.className = 'badge bg-success text-white px-3 py-2 fs-6 mb-2';
+            badge.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>DOMAIN OPERASIONAL SAH (LEGIT)';
+            desc.innerHTML = `Pola karakter memiliki struktur leksikal alami kata manusia. Probabilitas DGA (${probPct}%) berada di bawah threshold ${data.threshold}.`;
+            probBar.className = 'progress-bar bg-success';
+            
+            mitText.innerHTML = `<span class="text-success"><i class="bi bi-check-all me-1"></i>Lalu lintas DNS diizinkan melintasi perimeter jaringan tanpa blokir.</span>`;
+            actControls.innerHTML = `<span class="badge bg-success text-white px-3 py-2">Safe Traffic</span>`;
+        }
+    }
+</script>
+{% endblock %}

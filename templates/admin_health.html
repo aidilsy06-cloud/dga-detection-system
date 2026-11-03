@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}System Health & Infrastructure Monitoring{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- Header -->
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-1"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>System Health & Infrastructure Monitoring</h4>
+            <p class="text-muted small mb-0">Pemantauan utilisasi perangkat keras server, throughput inferensi AI, dan status operasional layanan SOC</p>
+        </div>
+        <div>
+            <a href="/admin/health" class="btn btn-sm btn-outline-cyan">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh Metrik Status
+            </a>
+        </div>
+    </div>
+
+    <!-- 4 Key Infrastructure Stat Cards -->
+    <!-- CPU Usage -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card-soc p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="metric-label">CPU Utilization</span>
+                <span class="badge bg-dark text-cyan"><i class="bi bi-cpu"></i></span>
+            </div>
+            <div class="metric-value text-cyan mono">{{ health['cpu_percent'] }}%</div>
+            <div class="progress bg-dark mt-3" style="height: 6px;">
+                <div class="progress-bar bg-cyan" style="width: {{ health['cpu_percent'] }}%"></div>
+            </div>
+            <div class="small text-muted mt-2">Beban komputasi multi-core</div>
+        </div>
+    </div>
+
+    <!-- RAM Usage -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card-soc p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="metric-label">RAM Memory Usage</span>
+                <span class="badge bg-dark text-warning"><i class="bi bi-memory"></i></span>
+            </div>
+            <div class="metric-value text-warning mono">{{ health['ram_percent'] }}%</div>
+            <div class="progress bg-dark mt-3" style="height: 6px;">
+                <div class="progress-bar bg-warning" style="width: {{ health['ram_percent'] }}%"></div>
+            </div>
+            <div class="small text-muted mt-2">{{ health['ram_used_gb'] }} GB dari {{ health['ram_total_gb'] }} GB</div>
+        </div>
+    </div>
+
+    <!-- Disk Storage -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card-soc p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="metric-label">Disk Storage</span>
+                <span class="badge bg-dark text-success"><i class="bi bi-hdd"></i></span>
+            </div>
+            <div class="metric-value text-success mono">{{ health['disk_percent'] }}%</div>
+            <div class="progress bg-dark mt-3" style="height: 6px;">
+                <div class="progress-bar bg-success" style="width: {{ health['disk_percent'] }}%"></div>
+            </div>
+            <div class="small text-muted mt-2">Sisa ruang: {{ health['disk_free_gb'] }} GB</div>
+        </div>
+    </div>
+
+    <!-- Inference Latency -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card-soc p-3 border-info-subtle">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="metric-label text-info">Inference Latency</span>
+                <span class="badge bg-info-subtle text-info"><i class="bi bi-lightning-charge"></i></span>
+            </div>
+            <div class="metric-value text-white mono">{{ health['inference_latency_ms'] }} <span class="fs-6 text-muted">ms</span></div>
+            <div class="small text-success mt-3 d-flex align-items-center gap-1">
+                <i class="bi bi-check-circle-fill"></i> Sub-millisecond response time
+            </div>
+            <div class="small text-muted mt-1">Kecepatan per evaluasi kueri</div>
+        </div>
+    </div>
+
+    <!-- Detailed Service Status Table -->
+    <div class="col-lg-7">
+        <div class="card-soc h-100">
+            <div class="card-header-soc">
+                <div>
+                    <i class="bi bi-layers-fill text-cyan me-2"></i>Status Subsistem & Komponen Layanan
+                </div>
+                <span class="badge bg-success-subtle text-success">Semua Layanan Normal</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-soc mb-0">
+                        <thead>
+                            <tr>
+                                <th>Modul / Subsistem</th>
+                                <th>Fungsi Operasional</th>
+                                <th>Status Layanan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold text-light"><i class="bi bi-hdd-network text-info me-2"></i>DNS Ingestion Engine</td>
+                                <td class="small text-muted">Penangkapan paket kueri DNS real-time & parsing log PCAP</td>
+                                <td><span class="badge bg-success-subtle text-success"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>{{ health['dns_engine_status'] }}</span></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-light"><i class="bi bi-cpu text-warning me-2"></i>Random Forest ML Pipeline</td>
+                                <td class="small text-muted">Ekstraksi fitur leksikal dan inferensi probabilitas ancaman</td>
+                                <td><span class="badge bg-success-subtle text-success"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>{{ health['ml_service_status'] }}</span></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-light"><i class="bi bi-database text-purple me-2"></i>Database Storage & Audit</td>
+                                <td class="small text-muted">Penyimpanan immutable audit trail, whitelist, dan sinkhole map</td>
+                                <td><span class="badge bg-success-subtle text-success"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>{{ health['database_status'] }}</span></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-light"><i class="bi bi-fire text-danger me-2"></i>Firewall Policy Sync Daemon</td>
+                                <td class="small text-muted">Distribusi berkala aturan IPTables dan BIND9 RPZ Sinkhole</td>
+                                <td><span class="badge bg-success-subtle text-success"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>Active (10.10.10.254)</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Diagnostics Card -->
+    <div class="col-lg-5">
+        <div class="card-soc h-100 p-4 d-flex flex-column justify-content-between">
+            <div>
+                <h6 class="text-white fw-bold mb-3"><i class="bi bi-speedometer2 text-warning me-2"></i>Uji Kecepatan Inferensi Mandiri:</h6>
+                <p class="text-muted small">
+                    Sistem dirancang untuk beban tinggi (high-throughput environment) pada infrastruktur SOC enterprise. Pipeline leksikal mengekstraksi 4 fitur simultan:
+                </p>
+                <ul class="text-muted small ps-3 mb-3">
+                    <li>Domain Length: <code class="text-info">O(1)</code> string length lookup</li>
+                    <li>Vowel & Digit Ratios: <code class="text-info">O(N)</code> character pass</li>
+                    <li>Shannon Entropy: <code class="text-info">O(N)</code> bit entropy calculation</li>
+                    <li>Random Forest Inference: <code class="text-info">&le; 2.0 ms</code></li>
+                </ul>
+            </div>
+            <div class="border border-secondary rounded p-3 bg-dark">
+                <div class="small text-muted">Total Kueri Terindeks: <strong class="text-white">{{ health['total_logs'] }}</strong></div>
+                <div class="small text-muted">Aturan Pencekalan Aktif: <strong class="text-danger">{{ health['blocked_rules'] }} domain DGA</strong></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

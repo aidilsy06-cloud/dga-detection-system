@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}API & Webhook Management{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- Header -->
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-1"><i class="bi bi-code-slash text-cyan me-2"></i>API & Webhook Management</h4>
+            <p class="text-muted small mb-0">Otorisasi integrasi gateway pihak ketiga, token API RESTful, dan penyaluran notifikasi instan ke Telegram/Discord SOC</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-warning" onclick="testWebhook()">
+                <i class="bi bi-bell-fill me-1"></i>Uji Kirim Webhook Alert
+            </button>
+        </div>
+    </div>
+
+    <!-- Left: API Key Generation & Table -->
+    <div class="col-lg-7">
+        <div class="card-soc mb-3">
+            <div class="card-header-soc">
+                <div>
+                    <i class="bi bi-key-fill text-warning me-2"></i>Daftar Otorisasi API Key (X-API-Key)
+                </div>
+                <button type="button" class="btn btn-sm btn-cyan" data-bs-toggle="modal" data-bs-target="#newKeyModal">
+                    <i class="bi bi-plus-lg me-1"></i>Generate Key Baru
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-soc mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nama Aplikasi / Klien</th>
+                                <th>Kunci Rahasia (API Token)</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for k in keys %}
+                            <tr>
+                                <td class="fw-semibold text-light small">{{ k['key_name'] }}</td>
+                                <td>
+                                    <code class="text-info mono small">{{ k['api_key'] }}</code>
+                                </td>
+                                <td>
+                                    {% if k['status'] == 'Active' %}
+                                        <span class="badge bg-success-subtle text-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary text-muted">Revoked</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if k['status'] == 'Active' %}
+                                    <form action="/admin/api/revoke-key/{{ k['id'] }}" method="POST" onsubmit="return confirm('Cabut hak akses API Key ini?');">
+                                        <button type="submit" class="btn btn-xs btn-outline-danger" style="font-size: 0.72rem;">
+                                            Revoke
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                        <span class="text-muted small">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">Belum ada API Key yang dibuat.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integration Documentation & cURL Snippet -->
+        <div class="card-soc p-3">
+            <h6 class="text-white fw-bold small"><i class="bi bi-terminal-fill text-cyan me-2"></i>Contoh Integrasi API Endpoint:</h6>
+            <p class="text-muted small mb-2">Endpoint REST API untuk melakukan inspeksi domain dari script Python atau firewall appliance:</p>
+            <pre class="bg-dark p-3 rounded text-info mono small border border-secondary mb-0"><code>curl -X POST http://127.0.0.1:5000/api/v1/detect \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: soc-dga-live-key-9921" \
+  -d '{"domain": "xkq981mbpzwt74v.biz"}'</code></pre>
+        </div>
+    </div>
+
+    <!-- Right: Webhook Configuration Card -->
+    <div class="col-lg-5">
+        <div class="card-soc mb-3">
+            <div class="card-header-soc">
+                <div>
+                    <i class="bi bi-broadcast text-danger me-2"></i>Konfigurasi Webhook Alerting
+                </div>
+                <span class="badge bg-danger-subtle text-danger">Real-Time Dispatch</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">
+                    Kirimkan peringatan instan ke kanal Discord, grup Telegram SOC, atau SIEM eksternal setiap kali domain DGA terdeteksi di perimeter jaringan.
+                </p>
+
+                <form action="/admin/api/update-webhook" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label text-light small fw-bold">Platform Notifikasi:</label>
+                        <select name="webhook_platform" class="form-select bg-dark border-secondary text-white">
+                            <option value="Discord Channel SOC Alert" {% if 'Discord' in webhook_platform %}selected{% endif %}>Discord Webhook Channel</option>
+                            <option value="Telegram SOC Bot API" {% if 'Telegram' in webhook_platform %}selected{% endif %}>Telegram Incident Alert Bot</option>
+                            <option value="Generic SIEM / Syslog Webhook" {% if 'SIEM' in webhook_platform %}selected{% endif %}>Enterprise SIEM / Syslog Webhook</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-light small fw-bold">Webhook Target URL:</label>
+                        <input type="url" name="webhook_url" class="form-control bg-dark border-secondary text-warning mono small" 
+                               value="{{ webhook_url }}" placeholder="https://discord.com/api/webhooks/..." required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-light small fw-bold">Ambang Peringatan (Alert Severity):</label>
+                        <input type="text" class="form-control bg-dark border-secondary text-white small" value="Kritis / Tinggi (DGA Prob &ge; 0.70)" readonly>
+                    </div>
+
+                    <button type="submit" class="btn btn-sm btn-cyan w-100">
+                        <i class="bi bi-check-lg me-1"></i>Simpan Konfigurasi Webhook
+                    </button>
+                </form>
+
+                <div id="webhookAlertResult" class="alert alert-dark border border-secondary small d-none mt-3 mb-0">
+                    <!-- test result -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Generate API Key -->
+<div class="modal fade" id="newKeyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-white"><i class="bi bi-key-fill text-cyan me-2"></i>Buat API Key Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/admin/api/generate-key" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-light small fw-bold">Nama Layanan / Klien:</label>
+                        <input type="text" name="key_name" class="form-control bg-dark border-secondary text-white" placeholder="misal: Edge Firewall Gateway L3" required>
+                    </div>
+                    <div class="small text-muted">
+                        Kunci otorisasi 256-bit akan digenerate otomatis dengan hak akses verifikasi kueri domain.
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-sm btn-cyan">Generate Token</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function testWebhook() {
+        const box = document.getElementById('webhookAlertResult');
+        box.classList.remove('d-none');
+        box.className = 'alert alert-info border-info small mt-3 mb-0';
+        box.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Mengirimkan payload uji coba notifikasi...`;
+
+        try {
+            const res = await fetch('/admin/webhook/test', { method: 'POST' });
+            const data = await res.json();
+            box.className = 'alert alert-success border-success small mt-3 mb-0';
+            box.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i>${data.message}`;
+        } catch (err) {
+            box.className = 'alert alert-danger border-danger small mt-3 mb-0';
+            box.innerHTML = `Gagal mengirim: ${err.message}`;
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}Dataset Management & Retraining Pipeline{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- Header -->
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-1"><i class="bi bi-database-fill text-purple me-2"></i>Dataset Management & Retraining Pipeline</h4>
+            <p class="text-muted small mb-0">Manajemen korpus dataset DGA, pengunggahan sampel varian malware baru, dan pelatihan ulang model terotomasi</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/admin/dataset/export" class="btn btn-sm btn-outline-light">
+                <i class="bi bi-download me-1"></i>Ekspor Dataset Saat Ini (Excel)
+            </a>
+            <button type="button" class="btn btn-sm btn-purple" id="btnRetrain" onclick="triggerRetrain()">
+                <i class="bi bi-arrow-repeat me-1"></i>Picu Siklus Retraining Model
+            </button>
+        </div>
+    </div>
+
+    <!-- Dataset Summary Metric Cards -->
+    <div class="col-md-4">
+        <div class="card-soc p-3 text-center">
+            <div class="metric-label">Total Sampel Korpus</div>
+            <div class="metric-value text-white">{{ total_samples }}</div>
+            <div class="small text-muted">Domain beranotasi fitur leksikal</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-soc p-3 text-center border-success-subtle">
+            <div class="metric-label text-success">Sampel Domain Sah (Legit)</div>
+            <div class="metric-value text-success">{{ legit_samples }}</div>
+            <div class="small text-muted">Situs berita, e-commerce, perbankan, gov</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-soc p-3 text-center border-danger-subtle">
+            <div class="metric-label text-danger">Sampel Malware DGA</div>
+            <div class="metric-value text-danger">{{ dga_samples }}</div>
+            <div class="small text-muted">Conficker, Suppobox, Cryptolocker, dll</div>
+        </div>
+    </div>
+
+    <!-- Upload & Retrain Controls -->
+    <div class="col-lg-5">
+        <div class="card-soc mb-3">
+            <div class="card-header-soc">
+                <div>
+                    <i class="bi bi-cloud-arrow-up-fill text-cyan me-2"></i>Unggah Dataset Tambahan
+                </div>
+                <span class="badge bg-dark border border-secondary text-info">CSV / Excel</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">
+                    Tambahkan sampel log domain varian malware terbaru untuk memperkaya basis pengetahuan model machine learning.
+                </p>
+
+                <form action="/admin/dataset/upload" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label text-light small fw-bold">Pilih File Dataset (.csv / .xlsx):</label>
+                        <input type="file" name="dataset_file" class="form-control bg-dark border-secondary text-white" accept=".csv, .xlsx, .xls" required>
+                        <div class="form-text text-muted small">Kolom yang dikenali: <code>domain</code>, <code>label</code> (1 = DGA, 0 = Legit). Fitur leksikal akan diekstraksi otomatis jika belum tersedia.</div>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-cyan w-100">
+                        <i class="bi bi-plus-circle me-1"></i>Impor ke Korpus Latihan
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Retrain Pipeline Status Box -->
+        <div class="card-soc p-3">
+            <h6 class="text-white fw-bold small"><i class="bi bi-gear-wide-connected text-warning me-2"></i>Siklus Pelatihan Ulang (Retraining Pipeline):</h6>
+            <p class="text-muted small mb-2">
+                Menjalankan standardisasi fitur via <code>StandardScaler</code> dan pelatihan 100 decision trees pada <code>RandomForestClassifier</code>.
+            </p>
+            <div id="retrainAlert" class="alert alert-dark border border-secondary small d-none mb-0">
+                <!-- dynamic alert -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Dataset Preview Table -->
+    <div class="col-lg-7">
+        <div class="card-soc">
+            <div class="card-header-soc">
+                <div>
+                    <i class="bi bi-table text-info me-2"></i>Pratinjau Data Korpus Latihan (Top 25)
+                </div>
+                <span class="badge bg-dark border border-secondary text-muted">{{ total_samples }} Total Entri</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 480px;">
+                    <table class="table table-soc table-hover mb-0">
+                        <thead class="sticky-top">
+                            <tr>
+                                <th>Domain</th>
+                                <th>Panjang</th>
+                                <th>Rasio Vokal</th>
+                                <th>Rasio Angka</th>
+                                <th>Entropi Shannon</th>
+                                <th>Label Anotasi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in sample_data %}
+                            <tr>
+                                <td class="mono small fw-bold {% if row['label'] == 1 %}text-danger{% else %}text-light{% endif %}">
+                                    {{ row['domain'] }}
+                                </td>
+                                <td class="mono small">{{ row['length'] }}</td>
+                                <td class="mono small">{{ (row['vowel_ratio'] * 100) | round(1) }}%</td>
+                                <td class="mono small">{{ (row['digit_ratio'] * 100) | round(1) }}%</td>
+                                <td>
+                                    <span class="badge bg-dark border border-secondary text-warning mono">{{ row['shannon_entropy'] }}</span>
+                                </td>
+                                <td>
+                                    {% if row['label'] == 1 %}
+                                        <span class="badge bg-danger text-white">1 - DGA</span>
+                                    {% else %}
+                                        <span class="badge bg-success-subtle text-success">0 - Legit</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">Dataset kosong.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function triggerRetrain() {
+        const btn = document.getElementById('btnRetrain');
+        const alertBox = document.getElementById('retrainAlert');
+
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Melatih Ulang Model...`;
+
+        alertBox.className = 'alert alert-info border-info small mb-0';
+        alertBox.classList.remove('d-none');
+        alertBox.innerHTML = `<i class="bi bi-hourglass-split me-1"></i>Siklus inferensi pelatihan ulang sedang berlangsung pada CPU...`;
+
+        try {
+            const formData = new FormData();
+            formData.append('algo', 'rf');
+
+            const res = await fetch('/admin/dataset/retrain', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if (res.ok) {
+                alertBox.className = 'alert alert-success border-success small mb-0';
+                alertBox.innerHTML = `
+                    <strong><i class="bi bi-check-circle-fill me-1"></i>${data.message}</strong><br>
+                    Akurasi Baru: <strong class="text-white">${data.metrics.accuracy}%</strong> | 
+                    Presisi: <strong class="text-white">${data.metrics.precision}%</strong> | 
+                    Recall: <strong class="text-white">${data.metrics.recall}%</strong> | 
+                    F1-Score: <strong class="text-white">${data.metrics.f1_score}%</strong>
+                `;
+            } else {
+                alertBox.className = 'alert alert-danger border-danger small mb-0';
+                alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-1"></i>Gagal: ${data.message}`;
+            }
+        } catch (err) {
+            alertBox.className = 'alert alert-danger border-danger small mb-0';
+            alertBox.innerHTML = `Terjadi kesalahan jaringan: ${err.message}`;
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="bi bi-arrow-repeat me-1"></i>Picu Siklus Retraining Model`;
+        }
+    }
+</script>
+{% endblock %}

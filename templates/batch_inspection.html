@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block title %}Batch Upload Inspection{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- Upload Section -->
+    <div class="col-12">
+        <div class="card-soc mb-3">
+            <div class="card-header-soc">
+                <div>
+                    <i class="bi bi-file-earmark-arrow-up-fill text-cyan me-2"></i>Inspeksi Log Jaringan Massal (Batch Inspection)
+                </div>
+                <span class="badge bg-dark border border-secondary text-info">Format CSV / TXT / PCAP Log</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">
+                    Unggah file log kueri DNS dari gateway, firewall, atau sensor lalu lintas SOC. Sistem akan mengekstrak fitur leksikal dan melakukan klasifikasi berantai secara massal.
+                </p>
+
+                <form action="/analyst/batch" method="POST" enctype="multipart/form-data" class="row g-3 align-items-center">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <input type="file" name="logfile" class="form-control bg-dark border-secondary text-white" accept=".csv, .txt, .log, .xlsx, .xls" required>
+                            <button type="submit" class="btn btn-cyan px-4">
+                                <i class="bi bi-play-circle-fill me-1"></i>Mulai Analisis Log
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <a href="/admin/dataset/export" class="btn btn-sm btn-outline-secondary" title="Unduh contoh format file">
+                            <i class="bi bi-download me-1"></i>Unduh Contoh File Log (CSV)
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section (if available) -->
+    {% if summary %}
+    <div class="col-12">
+        <!-- Summary Stat Cards -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-3">
+                <div class="card-soc p-3 text-center">
+                    <div class="metric-label">Total Log Diperiksa</div>
+                    <div class="metric-value text-white">{{ summary['total'] }}</div>
+                    <div class="small text-muted">{{ summary['filename'] }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-soc p-3 text-center border-danger">
+                    <div class="metric-label text-danger">Ancaman DGA Ditemukan</div>
+                    <div class="metric-value text-danger">{{ summary['dga'] }}</div>
+                    <div class="small text-danger fw-bold">Perlu Tindakan Blokir</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-soc p-3 text-center">
+                    <div class="metric-label text-success">Domain Sah (Legit)</div>
+                    <div class="metric-value text-success">{{ summary['legit'] }}</div>
+                    <div class="small text-muted">Aman (Safe)</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-soc p-3 text-center">
+                    <div class="metric-label">Tingkat Ancaman File</div>
+                    <div class="metric-value text-warning">{{ summary['threat_percentage'] }}%</div>
+                    <div class="small text-muted">Rasio DGA terhadap total</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Export Controls Bar -->
+        <div class="card-soc mb-3 p-3">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <!-- Filter Pills -->
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-info active" id="btnFilterAll" onclick="filterTable('ALL')">
+                        Semua Hasil ({{ summary['total'] }})
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" id="btnFilterDGA" onclick="filterTable('DGA')">
+                        <i class="bi bi-bug-fill me-1"></i>Hanya DGA ({{ summary['dga'] }})
+                    </button>
+                    <button type="button" class="btn btn-outline-success" id="btnFilterLegit" onclick="filterTable('Legit')">
+                        <i class="bi bi-check-circle me-1"></i>Hanya Legit ({{ summary['legit'] }})
+                    </button>
+                </div>
+
+                <!-- Search Filter Box -->
+                <div class="input-group input-group-sm" style="max-width: 250px;">
+                    <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" id="tableSearch" class="form-control bg-dark border-secondary text-white" placeholder="Cari nama domain..." onkeyup="searchTable()">
+                </div>
+
+                <!-- Export & PDF Report Buttons -->
+                <div class="d-flex gap-2">
+                    <a href="/analyst/batch/report-printable" target="_blank" class="btn btn-sm btn-danger">
+                        <i class="bi bi-file-earmark-pdf-fill me-1"></i>Unduh Laporan Investigasi (PDF)
+                    </a>
+                    <a href="/analyst/batch/export-csv" class="btn btn-sm btn-outline-light">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i>Ekspor Hasil (CSV)
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Results Table -->
+        <div class="card-soc">
+            <div class="card-header-soc">
+                <div>
+                    <i class="bi bi-table text-cyan me-2"></i>Tabel Temuan Investigasi Log DNS Massal
+                </div>
+                <span class="badge bg-dark border border-secondary text-muted">Ambang Keputusan: {{ current_threshold }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 520px;">
+                    <table class="table table-soc table-hover mb-0" id="batchResultTable">
+                        <thead class="sticky-top">
+                            <tr>
+                                <th>No</th>
+                                <th>Nama Domain</th>
+                                <th>Klasifikasi</th>
+                                <th>Confidence</th>
+                                <th>Panjang</th>
+                                <th>Rasio Vokal</th>
+                                <th>Rasio Angka</th>
+                                <th>Entropi</th>
+                                <th>Tindakan Sistem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in results %}
+                            <tr class="table-row-item" data-class="{{ r['classification'] }}" data-domain="{{ r['domain'] }}">
+                                <td class="text-muted small">{{ loop.index }}</td>
+                                <td class="mono fw-bold {% if r['classification'] == 'DGA' %}text-danger{% else %}text-light{% endif %}">
+                                    {{ r['domain'] }}
+                                </td>
+                                <td>
+                                    {% if r['classification'] == 'DGA' %}
+                                        <span class="badge badge-dga"><i class="bi bi-bug-fill me-1"></i>DGA Threat</span>
+                                    {% else %}
+                                        <span class="badge badge-legit"><i class="bi bi-check-circle me-1"></i>Legit</span>
+                                    {% endif %}
+                                </td>
+                                <td class="mono small">{{ r['confidence'] }}%</td>
+                                <td class="mono small">{{ r['features']['length'] }}</td>
+                                <td class="mono small">{{ (r['features']['vowel_ratio'] * 100) | round(1) }}%</td>
+                                <td class="mono small">{{ (r['features']['digit_ratio'] * 100) | round(1) }}%</td>
+                                <td>
+                                    <span class="badge bg-dark border border-secondary text-warning mono">{{ r['features']['shannon_entropy'] }}</span>
+                                </td>
+                                <td>
+                                    {% if r['classification'] == 'DGA' %}
+                                        <span class="badge bg-danger text-white"><i class="bi bi-shield-slash me-1"></i>Sinkholed</span>
+                                    {% else %}
+                                        <span class="badge bg-success-subtle text-success">Allowed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentFilter = 'ALL';
+
+    function filterTable(type) {
+        currentFilter = type;
+        document.getElementById('btnFilterAll').classList.toggle('active', type === 'ALL');
+        document.getElementById('btnFilterDGA').classList.toggle('active', type === 'DGA');
+        document.getElementById('btnFilterLegit').classList.toggle('active', type === 'Legit');
+
+        applyFilters();
+    }
+
+    function searchTable() {
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const query = document.getElementById('tableSearch') ? document.getElementById('tableSearch').value.toLowerCase() : '';
+        const rows = document.querySelectorAll('.table-row-item');
+
+        rows.forEach(row => {
+            const rowClass = row.getAttribute('data-class');
+            const rowDomain = row.getAttribute('data-domain').toLowerCase();
+
+            const matchClass = (currentFilter === 'ALL' || rowClass === currentFilter);
+            const matchSearch = rowDomain.includes(query);
+
+            if (matchClass && matchSearch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

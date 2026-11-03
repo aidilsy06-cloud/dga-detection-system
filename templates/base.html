@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="id" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DGA Detection & Intelligence Platform{% endblock %} | Cyber SOC</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <style>
+        :root {
+            --soc-bg: #0b0f19;
+            --soc-surface: #111827;
+            --soc-card: #151e32;
+            --soc-border: #1e293b;
+            --soc-cyan: #06b6d4;
+            --soc-cyan-glow: rgba(6, 182, 212, 0.25);
+            --soc-danger: #ef4444;
+            --soc-danger-glow: rgba(239, 68, 68, 0.25);
+            --soc-success: #10b981;
+            --soc-warning: #f59e0b;
+            --soc-purple: #8b5cf6;
+        }
+
+        body {
+            background-color: var(--soc-bg);
+            color: #e2e8f0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Navbar & Cyber Glow */
+        .navbar-soc {
+            background-color: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--soc-border);
+            padding: 0.75rem 1.5rem;
+        }
+
+        .soc-brand {
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .soc-brand i {
+            color: var(--soc-cyan);
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 8px var(--soc-cyan));
+        }
+
+        .badge-live-pulse {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--soc-danger);
+            box-shadow: 0 0 10px var(--soc-danger);
+            animation: pulse-animation 1.5s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        /* Sidebar & Navigation */
+        .sub-nav {
+            background-color: var(--soc-surface);
+            border-bottom: 1px solid var(--soc-border);
+            padding: 0.5rem 1.5rem;
+        }
+
+        .nav-pills .nav-link {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 0.4rem 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .nav-pills .nav-link:hover {
+            color: #f1f5f9;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-pills .nav-link.active {
+            color: #0b0f19;
+            background-color: var(--soc-cyan);
+            font-weight: 600;
+            box-shadow: 0 0 12px var(--soc-cyan-glow);
+        }
+
+        .nav-pills .nav-link.active-admin {
+            color: #fff;
+            background-color: var(--soc-purple);
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.35);
+        }
+
+        /* Cards & Containers */
+        .card-soc {
+            background-color: var(--soc-card);
+            border: 1px solid var(--soc-border);
+            border-radius: 10px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card-soc:hover {
+            border-color: rgba(6, 182, 212, 0.4);
+        }
+
+        .card-header-soc {
+            background-color: rgba(17, 24, 39, 0.6);
+            border-bottom: 1px solid var(--soc-border);
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.85rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            line-height: 1.1;
+        }
+
+        .metric-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        /* Tables */
+        .table-soc {
+            --bs-table-bg: transparent;
+            --bs-table-color: #cbd5e1;
+            --bs-table-border-color: var(--soc-border);
+            font-size: 0.875rem;
+        }
+
+        .table-soc th {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #94a3b8;
+            background-color: rgba(17, 24, 39, 0.8);
+            border-bottom: 2px solid var(--soc-border);
+            padding: 0.75rem 0.85rem;
+        }
+
+        .table-soc td {
+            padding: 0.75rem 0.85rem;
+            vertical-align: middle;
+        }
+
+        .table-soc tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Badges */
+        .badge-dga {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            font-weight: 600;
+        }
+
+        .badge-legit {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        .btn-cyan {
+            background-color: var(--soc-cyan);
+            color: #0b0f19;
+            font-weight: 600;
+            border: none;
+        }
+
+        .btn-cyan:hover {
+            background-color: #22d3ee;
+            color: #0b0f19;
+            box-shadow: 0 0 12px var(--soc-cyan-glow);
+        }
+
+        .btn-purple {
+            background-color: var(--soc-purple);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+        }
+
+        .btn-purple:hover {
+            background-color: #9333ea;
+            color: #fff;
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Confusion Matrix Styling */
+        .cm-cell {
+            padding: 1.2rem;
+            text-align: center;
+            border-radius: 8px;
+            border: 1px solid var(--soc-border);
+        }
+        .cm-tp { background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.4); }
+        .cm-fp { background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.4); }
+        .cm-fn { background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.4); }
+        .cm-tn { background: rgba(6, 182, 212, 0.12); border-color: rgba(6, 182, 212, 0.4); }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-soc">
+        <div class="container-fluid">
+            <!-- Brand -->
+            <a class="soc-brand" href="/">
+                <i class="bi bi-shield-lock-fill"></i>
+                <div>
+                    <div class="lh-1">DGA INTEL GUARD</div>
+                    <small style="font-size: 0.65rem; color: #94a3b8; font-weight: 400; letter-spacing: 0.5px;">MALWARE C2 DOMAIN DEFENSE SYSTEM</small>
+                </div>
+            </a>
+
+            <!-- Center Status Indicators -->
+            <div class="d-none d-lg-flex align-items-center gap-3">
+                <div class="badge-live-pulse bg-dark border border-secondary text-light">
+                    <span class="pulse-dot"></span>
+                    <span>THREAT STATUS: <strong class="{% if header_threat_level == 'Critical' or header_threat_level == 'High' %}text-danger{% elif header_threat_level == 'Elevated' %}text-warning{% else %}text-success{% endif %}">{{ header_threat_level | upper }}</strong></span>
+                </div>
+                <div class="small text-muted border-start border-secondary ps-3">
+                    Threshold: <span class="badge bg-secondary text-info mono">{{ current_threshold }}</span>
+                </div>
+                <div class="small text-muted">
+                    Engine: <span class="badge bg-dark border border-success text-success"><i class="bi bi-check-circle-fill me-1"></i>Random Forest ML</span>
+                </div>
+            </div>
+
+            <!-- Right Controls: Role Switcher & User Profile -->
+            <div class="d-flex align-items-center gap-2">
+                <!-- Role Switcher Pill -->
+                <div class="btn-group btn-group-sm" role="group">
+                    <a href="/switch-role/analyst" class="btn {% if current_role == 'analyst' %}btn-cyan{% else %}btn-outline-secondary{% endif %}" title="Switch ke Analis SOC">
+                        <i class="bi bi-person-badge me-1"></i>Analyst (Front-End)
+                    </a>
+                    <a href="/switch-role/admin" class="btn {% if current_role == 'admin' %}btn-purple{% else %}btn-outline-secondary{% endif %}" title="Switch ke Administrator Sistem">
+                        <i class="bi bi-gear-fill me-1"></i>Admin (Back-End)
+                    </a>
+                </div>
+
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle me-1"></i>{{ current_user }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary">
+                        <li><h6 class="dropdown-header text-muted">Hak Akses: {{ current_role | upper }}</h6></li>
+                        <li><a class="dropdown-item text-light" href="/"><i class="bi bi-speedometer2 me-2"></i>Dashboard Analis</a></li>
+                        <li><a class="dropdown-item text-light" href="/admin/model"><i class="bi bi-cpu me-2"></i>Manajemen Model</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item text-light" href="/admin/users"><i class="bi bi-shield-check me-2"></i>Audit Trail & RBAC</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sub Navigation Bar based on Role -->
+    <div class="sub-nav">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <ul class="nav nav-pills gap-1">
+                    <!-- Security Analyst (Front-End) Navs -->
+                    <li class="nav-item">
+                        <span class="nav-link disabled text-muted fw-bold ps-0 pe-2" style="font-size: 0.75rem;">
+                            <i class="bi bi-binoculars me-1"></i>SOC FRONT-END:
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' or request.path == '/analyst' %}active{% endif %}" href="/analyst">
+                            <i class="bi bi-grid-1x2-fill me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/analyst/scanner' %}active{% endif %}" href="/analyst/scanner">
+                            <i class="bi bi-search me-1"></i>Single Scanner
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/analyst/batch' %}active{% endif %}" href="/analyst/batch">
+                            <i class="bi bi-file-earmark-arrow-up-fill me-1"></i>Batch Inspection
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/analyst/stream' %}active{% endif %}" href="/analyst/stream">
+                            <i class="bi bi-activity me-1"></i>Real-Time DNS Stream
+                        </a>
+                    </li>
+
+                    <li class="nav-item border-start border-secondary mx-2"></li>
+
+                    <!-- Administrator (Back-End) Navs -->
+                    <li class="nav-item">
+                        <span class="nav-link disabled text-muted fw-bold ps-0 pe-2" style="font-size: 0.75rem;">
+                            <i class="bi bi-sliders me-1"></i>BACK-END ADMIN:
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/admin/model' or request.path == '/admin' %}active-admin text-white{% endif %}" href="/admin/model">
+                            <i class="bi bi-cpu-fill me-1"></i>Model & Metrics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/admin/threshold' %}active-admin text-white{% endif %}" href="/admin/threshold">
+                            <i class="bi bi-sliders2 me-1"></i>Threshold Tuning
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/admin/firewall' %}active-admin text-white{% endif %}" href="/admin/firewall">
+                            <i class="bi bi-fire me-1"></i>Firewall & Sinkhole
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/admin/dataset' %}active-admin text-white{% endif %}" href="/admin/dataset">
+                            <i class="bi bi-database-fill me-1"></i>Dataset & Retrain
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/admin/api' %}active-admin text-white{% endif %}" href="/admin/api">
+                            <i class="bi bi-code-slash me-1"></i>API & Webhooks
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/admin/health' %}active-admin text-white{% endif %}" href="/admin/health">
+                            <i class="bi bi-heart-pulse-fill me-1"></i>System Health
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/admin/users' %}active-admin text-white{% endif %}" href="/admin/users">
+                            <i class="bi bi-shield-lock me-1"></i>RBAC & Audit
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="small text-muted mono d-none d-md-block" id="liveClock">
+                    --:--:-- UTC
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div class="container-fluid mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show border-0 shadow-sm" role="alert">
+                        <i class="bi bi-info-circle-fill me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="container-fluid py-3 px-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-top border-secondary py-3 mt-5" style="background-color: var(--soc-surface);">
+        <div class="container-fluid px-4 d-flex justify-content-between align-items-center flex-wrap gap-2 small text-muted">
+            <div>
+                <strong>DGA Detection Platform</strong> &copy; 2026. Intelligent Cyber Security Engine.
+            </div>
+            <div>
+                Algoritma Aktif: <span class="text-info">Random Forest</span> |
+                Decision Threshold: <span class="text-warning mono">{{ current_threshold }}</span> |
+                Mitigasi: <span class="text-success">DNS Sinkhole (10.10.10.254)</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Live Clock
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0] + ' WIB';
+            const clockEl = document.getElementById('liveClock');
+            if (clockEl) clockEl.innerText = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
