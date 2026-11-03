@@ -7,12 +7,12 @@
     <!-- Header -->
     <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-            <h4 class="fw-bold mb-1"><i class="bi bi-code-slash text-cyan me-2"></i>API & Webhook Management</h4>
+            <h4 class="fw-bold mb-1 text-dark"><i class="bi bi-code-slash text-primary me-2"></i>API & Webhook Management</h4>
             <p class="text-muted small mb-0">Otorisasi integrasi gateway pihak ketiga, token API RESTful, dan penyaluran notifikasi instan ke Telegram/Discord SOC</p>
         </div>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-sm btn-outline-warning" onclick="testWebhook()">
-                <i class="bi bi-bell-fill me-1"></i>Uji Kirim Webhook Alert
+            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-semibold bg-white" onclick="testWebhook()">
+                <i class="bi bi-bell-fill text-warning me-1"></i>Uji Kirim Webhook Alert
             </button>
         </div>
     </div>
@@ -21,7 +21,7 @@
     <div class="col-lg-7">
         <div class="card-soc mb-3">
             <div class="card-header-soc">
-                <div>
+                <div class="fw-bold text-dark">
                     <i class="bi bi-key-fill text-warning me-2"></i>Daftar Otorisasi API Key (X-API-Key)
                 </div>
                 <button type="button" class="btn btn-sm btn-cyan" data-bs-toggle="modal" data-bs-target="#newKeyModal">
@@ -42,15 +42,15 @@
                         <tbody>
                             {% for k in keys %}
                             <tr>
-                                <td class="fw-semibold text-light small">{{ k['key_name'] }}</td>
+                                <td class="fw-semibold text-dark small">{{ k['key_name'] }}</td>
                                 <td>
-                                    <code class="text-info mono small">{{ k['api_key'] }}</code>
+                                    <code class="text-primary mono small bg-light px-2 py-1 rounded border">{{ k['api_key'] }}</code>
                                 </td>
                                 <td>
                                     {% if k['status'] == 'Active' %}
-                                        <span class="badge bg-success-subtle text-success">Active</span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
                                     {% else %}
-                                        <span class="badge bg-secondary text-muted">Revoked</span>
+                                        <span class="badge bg-secondary-subtle text-muted">Revoked</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -78,9 +78,9 @@
 
         <!-- Integration Documentation & cURL Snippet -->
         <div class="card-soc p-3">
-            <h6 class="text-white fw-bold small"><i class="bi bi-terminal-fill text-cyan me-2"></i>Contoh Integrasi API Endpoint:</h6>
+            <h6 class="text-dark fw-bold small"><i class="bi bi-terminal-fill text-primary me-2"></i>Contoh Integrasi API Endpoint:</h6>
             <p class="text-muted small mb-2">Endpoint REST API untuk melakukan inspeksi domain dari script Python atau firewall appliance:</p>
-            <pre class="bg-dark p-3 rounded text-info mono small border border-secondary mb-0"><code>curl -X POST http://127.0.0.1:5000/api/v1/detect \
+            <pre class="code-terminal mb-0"><code>curl -X POST http://127.0.0.1:5000/api/v1/detect \
   -H "Content-Type: application/json" \
   -H "X-API-Key: soc-dga-live-key-9921" \
   -d '{"domain": "xkq981mbpzwt74v.biz"}'</code></pre>
@@ -91,10 +91,10 @@
     <div class="col-lg-5">
         <div class="card-soc mb-3">
             <div class="card-header-soc">
-                <div>
+                <div class="fw-bold text-dark">
                     <i class="bi bi-broadcast text-danger me-2"></i>Konfigurasi Webhook Alerting
                 </div>
-                <span class="badge bg-danger-subtle text-danger">Real-Time Dispatch</span>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Real-Time Dispatch</span>
             </div>
             <div class="card-body">
                 <p class="text-muted small">
@@ -103,8 +103,8 @@
 
                 <form action="/admin/api/update-webhook" method="POST">
                     <div class="mb-3">
-                        <label class="form-label text-light small fw-bold">Platform Notifikasi:</label>
-                        <select name="webhook_platform" class="form-select bg-dark border-secondary text-white">
+                        <label class="form-label text-dark small fw-bold">Platform Notifikasi:</label>
+                        <select name="webhook_platform" class="form-select">
                             <option value="Discord Channel SOC Alert" {% if 'Discord' in webhook_platform %}selected{% endif %}>Discord Webhook Channel</option>
                             <option value="Telegram SOC Bot API" {% if 'Telegram' in webhook_platform %}selected{% endif %}>Telegram Incident Alert Bot</option>
                             <option value="Generic SIEM / Syslog Webhook" {% if 'SIEM' in webhook_platform %}selected{% endif %}>Enterprise SIEM / Syslog Webhook</option>
@@ -112,14 +112,14 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label text-light small fw-bold">Webhook Target URL:</label>
-                        <input type="url" name="webhook_url" class="form-control bg-dark border-secondary text-warning mono small" 
+                        <label class="form-label text-dark small fw-bold">Webhook Target URL:</label>
+                        <input type="url" name="webhook_url" class="form-control mono small" 
                                value="{{ webhook_url }}" placeholder="https://discord.com/api/webhooks/..." required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label text-light small fw-bold">Ambang Peringatan (Alert Severity):</label>
-                        <input type="text" class="form-control bg-dark border-secondary text-white small" value="Kritis / Tinggi (DGA Prob &ge; 0.70)" readonly>
+                        <label class="form-label text-dark small fw-bold">Ambang Peringatan (Alert Severity):</label>
+                        <input type="text" class="form-control bg-light text-muted small" value="Kritis / Tinggi (DGA Prob &ge; 0.70)" readonly>
                     </div>
 
                     <button type="submit" class="btn btn-sm btn-cyan w-100">
@@ -127,7 +127,7 @@
                     </button>
                 </form>
 
-                <div id="webhookAlertResult" class="alert alert-dark border border-secondary small d-none mt-3 mb-0">
+                <div id="webhookAlertResult" class="alert alert-light border small d-none mt-3 mb-0">
                     <!-- test result -->
                 </div>
             </div>
@@ -138,23 +138,23 @@
 <!-- Modal: Generate API Key -->
 <div class="modal fade" id="newKeyModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content bg-dark border-secondary">
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title text-white"><i class="bi bi-key-fill text-cyan me-2"></i>Buat API Key Baru</h5>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-dark fw-bold"><i class="bi bi-key-fill text-primary me-2"></i>Buat API Key Baru</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="/admin/api/generate-key" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label text-light small fw-bold">Nama Layanan / Klien:</label>
-                        <input type="text" name="key_name" class="form-control bg-dark border-secondary text-white" placeholder="misal: Edge Firewall Gateway L3" required>
+                        <label class="form-label text-dark small fw-bold">Nama Layanan / Klien:</label>
+                        <input type="text" name="key_name" class="form-control" placeholder="misal: Edge Firewall Gateway L3" required>
                     </div>
                     <div class="small text-muted">
                         Kunci otorisasi 256-bit akan digenerate otomatis dengan hak akses verifikasi kueri domain.
                     </div>
                 </div>
-                <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-sm btn-cyan">Generate Token</button>
                 </div>
             </form>
@@ -168,16 +168,16 @@
     async function testWebhook() {
         const box = document.getElementById('webhookAlertResult');
         box.classList.remove('d-none');
-        box.className = 'alert alert-info border-info small mt-3 mb-0';
+        box.className = 'alert alert-info border-info-subtle small mt-3 mb-0';
         box.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Mengirimkan payload uji coba notifikasi...`;
 
         try {
             const res = await fetch('/admin/webhook/test', { method: 'POST' });
             const data = await res.json();
-            box.className = 'alert alert-success border-success small mt-3 mb-0';
+            box.className = 'alert alert-success border-success-subtle small mt-3 mb-0';
             box.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i>${data.message}`;
         } catch (err) {
-            box.className = 'alert alert-danger border-danger small mt-3 mb-0';
+            box.className = 'alert alert-danger border-danger-subtle small mt-3 mb-0';
             box.innerHTML = `Gagal mengirim: ${err.message}`;
         }
     }

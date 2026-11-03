@@ -7,10 +7,10 @@
     <div class="col-lg-8">
         <div class="card-soc mb-3">
             <div class="card-header-soc">
-                <div>
+                <div class="fw-bold text-dark">
                     <i class="bi bi-sliders2 text-warning me-2"></i>Decision Threshold Tuning (Ambang Batas Keputusan)
                 </div>
-                <span class="badge bg-warning text-dark fw-bold">Live Dynamic Tuning</span>
+                <span class="badge bg-warning-subtle text-dark border border-warning-subtle fw-semibold">Live Dynamic Tuning</span>
             </div>
             <div class="card-body p-4">
                 <p class="text-muted">
@@ -21,9 +21,9 @@
                     <!-- Current Active Value Display -->
                     <div class="text-center mb-4">
                         <div class="metric-label mb-1">Ambang Batas Aktif Saat Ini</div>
-                        <div class="display-3 fw-bold text-warning mono" id="thresholdDisplay">{{ current_threshold }}</div>
-                        <div class="badge bg-dark border border-warning text-warning px-3 py-2 mt-2" id="thresholdZoneBadge">
-                            <i class="bi bi-star-fill me-1"></i>Zona Optimal (0.40 - 0.42) - Keseimbangan Recall & Presisi
+                        <div class="display-3 fw-bold text-dark mono" id="thresholdDisplay">{{ current_threshold }}</div>
+                        <div class="badge bg-warning-subtle border border-warning-subtle text-dark px-3 py-2 mt-2" id="thresholdZoneBadge">
+                            <i class="bi bi-star-fill text-warning me-1"></i>Zona Optimal (0.40 - 0.42) - Keseimbangan Recall & Presisi
                         </div>
                     </div>
 
@@ -31,7 +31,7 @@
                     <div class="mb-4 px-3">
                         <label class="form-label d-flex justify-content-between text-muted small fw-bold">
                             <span>0.10 (Maksimal Sensitif / Agresif)</span>
-                            <span class="text-warning fw-bold">Rekomendasi SOC: 0.40 - 0.42</span>
+                            <span class="text-dark fw-bold">Rekomendasi SOC: 0.40 - 0.42</span>
                             <span>0.90 (Konservatif / Ketat)</span>
                         </label>
                         <input type="range" class="form-range" id="thresholdSlider" name="threshold" 
@@ -41,23 +41,23 @@
                     <!-- Sensitivity Trade-off Explanatory Matrix -->
                     <div class="row g-2 text-center mb-4">
                         <div class="col-md-4">
-                            <div class="p-3 border border-secondary rounded bg-dark">
+                            <div class="p-3 border rounded bg-light">
                                 <small class="text-muted d-block mb-1">THRESHOLD &lt; 0.40</small>
                                 <strong class="text-danger d-block">Sensitivitas Sangat Tinggi</strong>
                                 <span class="small text-muted" style="font-size: 0.75rem;">Mencegah hampir seluruh DGA, namun risiko False Positive pada domain legitim sedikit meningkat.</span>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-3 border border-warning rounded bg-dark" style="background: rgba(245, 158, 11, 0.05) !important;">
+                            <div class="p-3 border border-warning rounded" style="background: rgba(245, 158, 11, 0.08) !important;">
                                 <small class="text-warning fw-bold d-block mb-1">0.40 &le; THRESHOLD &le; 0.42</small>
                                 <strong class="text-success d-block">Optimal SOC Setting</strong>
                                 <span class="small text-muted" style="font-size: 0.75rem;">Mencapai Recall 80.51% dan Presisi 93.79% pada Random Forest Classifier.</span>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-3 border border-secondary rounded bg-dark">
+                            <div class="p-3 border rounded bg-light">
                                 <small class="text-muted d-block mb-1">THRESHOLD &gt; 0.50</small>
-                                <strong class="text-info d-block">Konservatif (Default ML)</strong>
+                                <strong class="text-primary d-block">Konservatif (Default ML)</strong>
                                 <span class="small text-muted" style="font-size: 0.75rem;">Sangat jarang salah blokir domain sah, namun varian malware mutasi baru berpotensi lolos.</span>
                             </div>
                         </div>
@@ -65,7 +65,7 @@
 
                     <!-- Submit Button -->
                     <div class="d-flex justify-content-between align-items-center">
-                        <button type="button" class="btn btn-outline-secondary" onclick="resetToOptimal()">
+                        <button type="button" class="btn btn-outline-secondary bg-white" onclick="resetToOptimal()">
                             <i class="bi bi-arrow-counterclockwise me-1"></i>Reset ke Optimal (0.42)
                         </button>
                         <button type="submit" class="btn btn-warning px-4 fw-bold">
@@ -87,13 +87,13 @@
         
         const badge = document.getElementById('thresholdZoneBadge');
         if (val >= 0.40 && val <= 0.42) {
-            badge.className = 'badge bg-dark border border-warning text-warning px-3 py-2 mt-2';
-            badge.innerHTML = '<i class="bi bi-star-fill me-1"></i>Zona Optimal (0.40 - 0.42) - Keseimbangan Recall & Presisi';
+            badge.className = 'badge bg-warning-subtle border border-warning-subtle text-dark px-3 py-2 mt-2';
+            badge.innerHTML = '<i class="bi bi-star-fill text-warning me-1"></i>Zona Optimal (0.40 - 0.42) - Keseimbangan Recall & Presisi';
         } else if (val < 0.40) {
-            badge.className = 'badge bg-dark border border-danger text-danger px-3 py-2 mt-2';
+            badge.className = 'badge bg-danger-subtle border border-danger-subtle text-danger px-3 py-2 mt-2';
             badge.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i>Zona Agresif (< 0.40) - Deteksi Ekstra Sensitif';
         } else {
-            badge.className = 'badge bg-dark border border-info text-info px-3 py-2 mt-2';
+            badge.className = 'badge bg-primary-subtle border border-primary-subtle text-primary px-3 py-2 mt-2';
             badge.innerHTML = '<i class="bi bi-shield-lock me-1"></i>Zona Konservatif (> 0.42) - Mengutamakan Kelolosan Domain';
         }
     }

@@ -10,17 +10,17 @@
             <div class="card-header-soc">
                 <div class="d-flex align-items-center gap-2">
                     <span class="pulse-dot"></span>
-                    <span class="fw-bold">Real-Time DNS Log Stream (Live Feed)</span>
-                    <span class="badge bg-dark border border-secondary text-info mono" id="streamCounter">0 kueri</span>
+                    <span class="fw-bold text-dark">Real-Time DNS Log Stream (Live Feed)</span>
+                    <span class="badge bg-light text-primary border border-primary-subtle mono" id="streamCounter">0 kueri</span>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <button type="button" id="btnTogglePause" class="btn btn-sm btn-outline-warning" onclick="togglePause()">
+                    <button type="button" id="btnTogglePause" class="btn btn-sm btn-outline-warning bg-white" onclick="togglePause()">
                         <i class="bi bi-pause-fill me-1"></i>Pause Stream
                     </button>
                     <button type="button" class="btn btn-sm btn-cyan" onclick="simulateInboundTraffic()">
                         <i class="bi bi-lightning-charge-fill me-1"></i>Simulasikan Traffic Masuk
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearStream()">
+                    <button type="button" class="btn btn-sm btn-outline-secondary bg-white" onclick="clearStream()">
                         <i class="bi bi-trash3 me-1"></i>Bersihkan Tampilan
                     </button>
                 </div>
@@ -28,10 +28,10 @@
             <div class="card-body py-2">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 text-muted small">
                     <div>
-                        <i class="bi bi-info-circle me-1"></i>Memantau kueri DNS aktif dari perimeter jaringan secara kronologis. Inferensi leksikal dilakukan seketika (sub-millisecond latency).
+                        <i class="bi bi-info-circle me-1 text-primary"></i>Memantau kueri DNS aktif dari perimeter jaringan secara kronologis. Inferensi leksikal dilakukan seketika (sub-millisecond latency).
                     </div>
                     <div>
-                        Status Socket: <span class="badge bg-success-subtle text-success" id="streamStatus"><i class="bi bi-wifi me-1"></i>LIVE STREAMING</span>
+                        Status Socket: <span class="badge bg-success-subtle text-success border border-success-subtle" id="streamStatus"><i class="bi bi-wifi me-1"></i>LIVE STREAMING</span>
                     </div>
                 </div>
             </div>
@@ -59,7 +59,7 @@
                         <tbody id="streamBody">
                             <tr>
                                 <td colspan="8" class="text-center py-5 text-muted">
-                                    <div class="spinner-border spinner-border-sm text-cyan me-2"></div>
+                                    <div class="spinner-border spinner-border-sm text-primary me-2"></div>
                                     Menghubungkan ke gateway stream lalu lintas DNS...
                                 </td>
                             </tr>
@@ -86,7 +86,7 @@
             renderStream(data);
         } catch (err) {
             console.error('Error fetching stream:', err);
-            document.getElementById('streamStatus').className = 'badge bg-danger-subtle text-danger';
+            document.getElementById('streamStatus').className = 'badge bg-danger-subtle text-danger border border-danger-subtle';
             document.getElementById('streamStatus').innerText = 'KONEKSI TERPUTUS';
         }
     }
@@ -94,7 +94,7 @@
     function renderStream(logs) {
         const tbody = document.getElementById('streamBody');
         document.getElementById('streamCounter').innerText = logs.length + ' kueri aktif';
-        document.getElementById('streamStatus').className = 'badge bg-success-subtle text-success';
+        document.getElementById('streamStatus').className = 'badge bg-success-subtle text-success border border-success-subtle';
         document.getElementById('streamStatus').innerHTML = '<i class="bi bi-wifi me-1"></i>LIVE STREAMING (2.5s)';
 
         if (logs.length === 0) {
@@ -110,16 +110,16 @@
             html += `
                 <tr class="${isDGA ? 'table-danger-subtle' : ''}">
                     <td class="mono small text-muted">${item.timestamp}</td>
-                    <td class="mono small">${item.source_ip}</td>
-                    <td class="mono fw-bold ${isDGA ? 'text-danger' : 'text-white'}">
+                    <td class="mono small text-muted">${item.source_ip}</td>
+                    <td class="mono fw-bold ${isDGA ? 'text-danger' : 'text-dark'}">
                         ${item.domain}
                     </td>
                     <td>
-                        <span class="badge bg-dark border border-secondary ${item.entropy > 3.2 ? 'text-warning' : 'text-info'} mono">
+                        <span class="badge bg-light border ${item.entropy > 3.2 ? 'text-warning border-warning-subtle' : 'text-primary border-primary-subtle'} mono">
                             ${item.entropy}
                         </span>
                     </td>
-                    <td class="mono small">${item.length}</td>
+                    <td class="mono small text-muted">${item.length}</td>
                     <td class="mono small">
                         <span class="${isDGA ? 'text-danger fw-bold' : 'text-muted'}">${probPct}%</span>
                     </td>
@@ -131,7 +131,7 @@
                     <td>
                         ${isDGA 
                             ? '<span class="badge bg-danger text-white"><i class="bi bi-x-octagon-fill me-1"></i>BLOKIR (SINKHOLE)</span>' 
-                            : '<span class="badge bg-success-subtle text-success"><i class="bi bi-check-all me-1"></i>IZINKAN</span>'}
+                            : '<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-all me-1"></i>IZINKAN</span>'}
                     </td>
                 </tr>
             `;
@@ -145,12 +145,12 @@
         const status = document.getElementById('streamStatus');
 
         if (isPaused) {
-            btn.className = 'btn btn-sm btn-outline-success';
+            btn.className = 'btn btn-sm btn-outline-success bg-white';
             btn.innerHTML = '<i class="bi bi-play-fill me-1"></i>Resume Stream';
-            status.className = 'badge bg-warning-subtle text-warning';
+            status.className = 'badge bg-warning-subtle text-warning border border-warning-subtle';
             status.innerHTML = '<i class="bi bi-pause-circle me-1"></i>STREAM TERHENTI (PAUSED)';
         } else {
-            btn.className = 'btn btn-sm btn-outline-warning';
+            btn.className = 'btn btn-sm btn-outline-warning bg-white';
             btn.innerHTML = '<i class="bi bi-pause-fill me-1"></i>Pause Stream';
             fetchStream();
         }

@@ -8,10 +8,10 @@
     <div class="col-lg-5">
         <div class="card-soc mb-3">
             <div class="card-header-soc">
-                <div>
-                    <i class="bi bi-search text-cyan me-2"></i>Pemindai Domain Mandiri (Instant Scanner)
+                <div class="fw-bold text-dark">
+                    <i class="bi bi-search text-primary me-2"></i>Pemindai Domain Mandiri (Instant Scanner)
                 </div>
-                <span class="badge bg-dark border border-secondary text-info">Analisis Real-Time</span>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Analisis Real-Time</span>
             </div>
             <div class="card-body">
                 <p class="text-muted small">
@@ -20,10 +20,10 @@
 
                 <form id="singleScanForm" class="mb-3">
                     <div class="mb-3">
-                        <label class="form-label text-light fw-semibold">Masukkan Nama Domain / FQDN:</label>
+                        <label class="form-label text-dark fw-semibold small">Masukkan Nama Domain / FQDN:</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-globe2"></i></span>
-                            <input type="text" id="domainInput" name="domain" class="form-control bg-dark border-secondary text-white mono" 
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-globe2"></i></span>
+                            <input type="text" id="domainInput" name="domain" class="form-control mono text-dark" 
                                    placeholder="misal: xkq981mbpzwt74v.biz atau kemkes.go.id" required autofocus>
                         </div>
                         <div class="form-text text-muted small">Mendukung domain standar, subdomain, atau FQDN tanpa protokol http/https.</div>
@@ -35,22 +35,22 @@
                 </form>
 
                 <!-- Quick Test Samples -->
-                <div class="border-top border-secondary pt-3 mt-3">
-                    <label class="text-muted small fw-bold mb-2 d-block">CONTOH SAMPEL UJI CEPAT:</label>
+                <div class="border-top pt-3 mt-3">
+                    <label class="text-muted small fw-bold mb-2 d-block" style="font-size: 0.725rem;">CONTOH SAMPEL UJI CEPAT:</label>
                     <div class="d-flex flex-wrap gap-2">
-                        <button type="button" class="btn btn-sm btn-outline-success sample-btn" data-domain="bca.co.id">
+                        <button type="button" class="btn btn-sm btn-outline-success sample-btn bg-white" data-domain="bca.co.id">
                             <i class="bi bi-check2 me-1"></i>bca.co.id (Legit)
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-success sample-btn" data-domain="kemkes.go.id">
+                        <button type="button" class="btn btn-sm btn-outline-success sample-btn bg-white" data-domain="kemkes.go.id">
                             <i class="bi bi-check2 me-1"></i>kemkes.go.id (Legit)
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-danger sample-btn" data-domain="xkq981mbpzwt74v.biz">
+                        <button type="button" class="btn btn-sm btn-outline-danger sample-btn bg-white" data-domain="xkq981mbpzwt74v.biz">
                             <i class="bi bi-bug me-1"></i>xkq981mbpzwt74v.biz (DGA)
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-danger sample-btn" data-domain="werbvnm1290zxc.ru">
+                        <button type="button" class="btn btn-sm btn-outline-danger sample-btn bg-white" data-domain="werbvnm1290zxc.ru">
                             <i class="bi bi-bug me-1"></i>werbvnm1290zxc.ru (DGA)
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-danger sample-btn" data-domain="suppobox9912azq.info">
+                        <button type="button" class="btn btn-sm btn-outline-danger sample-btn bg-white" data-domain="suppobox9912azq.info">
                             <i class="bi bi-bug me-1"></i>suppobox9912azq.info (DGA)
                         </button>
                     </div>
@@ -59,12 +59,12 @@
         </div>
 
         <!-- Information Card -->
-        <div class="card-soc p-3">
-            <h6 class="text-white fw-bold small"><i class="bi bi-info-circle-fill text-info me-2"></i>Tentang Ekstraksi Fitur Leksikal:</h6>
+        <div class="card-soc p-3 bg-white">
+            <h6 class="text-dark fw-bold small"><i class="bi bi-info-circle-fill text-primary me-2"></i>Tentang Ekstraksi Fitur Leksikal:</h6>
             <ul class="text-muted small ps-3 mb-0">
-                <li><strong class="text-light">Panjang Domain:</strong> Domain DGA seringkali memiliki jumlah karakter lebih panjang untuk meminimalkan collision.</li>
-                <li><strong class="text-light">Rasio Vokal & Angka:</strong> DGA menghasilkan rasio huruf vokal abnormal rendah dan rasio angka tinggi.</li>
-                <li><strong class="text-light">Shannon Entropy:</strong> Mengukur keacakan distribusi bit/karakter. Nilai entropi > 3.2 mengindikasikan string pseudo-random.</li>
+                <li><strong class="text-dark">Panjang Domain:</strong> Domain DGA seringkali memiliki jumlah karakter lebih panjang untuk meminimalkan collision.</li>
+                <li><strong class="text-dark">Rasio Vokal & Angka:</strong> DGA menghasilkan rasio huruf vokal abnormal rendah dan rasio angka tinggi.</li>
+                <li><strong class="text-dark">Shannon Entropy:</strong> Mengukur keacakan distribusi bit/karakter. Nilai entropi > 3.2 mengindikasikan string pseudo-random.</li>
             </ul>
         </div>
     </div>
@@ -74,9 +74,9 @@
         <!-- Initial Placeholder State -->
         <div id="scanPlaceholder" class="card-soc text-center py-5">
             <div class="py-5">
-                <i class="bi bi-radar text-secondary" style="font-size: 3.5rem;"></i>
-                <h5 class="text-light mt-3">Menunggu Input Domain</h5>
-                <p class="text-muted small">Ketik nama domain di panel sebelah kiri atau klik sampel uji untuk melihat hasil ekstraksi leksikal dan inferensi AI.</p>
+                <i class="bi bi-radar text-secondary" style="font-size: 3.5rem; opacity: 0.6;"></i>
+                <h5 class="text-dark mt-3 fw-bold">Menunggu Input Domain</h5>
+                <p class="text-muted small px-4">Ketik nama domain di panel sebelah kiri atau klik salah satu sampel uji untuk melihat hasil ekstraksi leksikal dan inferensi AI.</p>
             </div>
         </div>
 
@@ -87,13 +87,13 @@
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <div>
                         <span id="verdictBadge" class="badge px-3 py-2 fs-6 mb-2">--</span>
-                        <h4 id="resultDomain" class="mono text-white fw-bold mb-1">domain.com</h4>
+                        <h4 id="resultDomain" class="mono text-dark fw-bold mb-1">domain.com</h4>
                         <div id="verdictDesc" class="text-muted small">Hasil klasifikasi model Random Forest</div>
                     </div>
                     <div class="text-end">
                         <div class="metric-label">Confidence Score</div>
-                        <div id="confidenceVal" class="metric-value text-cyan">0.0%</div>
-                        <div class="small text-muted mono">Threshold: <span class="text-warning">{{ current_threshold }}</span></div>
+                        <div id="confidenceVal" class="metric-value text-primary">0.0%</div>
+                        <div class="small text-muted mono">Threshold: <span class="text-warning fw-bold">{{ current_threshold }}</span></div>
                     </div>
                 </div>
 
@@ -101,10 +101,10 @@
                 <div class="mt-3">
                     <div class="d-flex justify-content-between small text-muted mb-1">
                         <span>Probabilitas Legit</span>
-                        <span id="probLabel" class="fw-bold text-white">Probabilitas DGA: 0%</span>
+                        <span id="probLabel" class="fw-bold text-dark">Probabilitas DGA: 0%</span>
                     </div>
-                    <div class="progress bg-dark" style="height: 10px;">
-                        <div id="probBar" class="progress-bar bg-cyan" style="width: 50%;"></div>
+                    <div class="progress" style="height: 10px;">
+                        <div id="probBar" class="progress-bar bg-primary" style="width: 50%;"></div>
                     </div>
                 </div>
             </div>
@@ -112,43 +112,43 @@
             <!-- 4 Lexical Feature Breakdown Cards -->
             <div class="card-soc mb-3">
                 <div class="card-header-soc">
-                    <div>
+                    <div class="fw-bold text-dark">
                         <i class="bi bi-braces-asterisk text-warning me-2"></i>Ekstraksi Properti Leksikal (Feature Engineering)
                     </div>
-                    <span class="badge bg-dark border border-secondary text-muted">Formula Otomatis</span>
+                    <span class="badge bg-light border text-muted">Formula Otomatis</span>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
                         <!-- Feature 1: Domain Length -->
                         <div class="col-6 col-md-3">
-                            <div class="border border-secondary rounded p-3 text-center bg-dark">
+                            <div class="border rounded-3 p-3 text-center bg-light">
                                 <div class="metric-label">Panjang (Length)</div>
-                                <div id="featLength" class="fs-3 fw-bold text-white mono my-1">--</div>
+                                <div id="featLength" class="fs-3 fw-bold text-dark mono my-1">--</div>
                                 <div class="small text-muted" style="font-size: 0.7rem;">Karakter</div>
                             </div>
                         </div>
 
                         <!-- Feature 2: Vowel Ratio -->
                         <div class="col-6 col-md-3">
-                            <div class="border border-secondary rounded p-3 text-center bg-dark">
+                            <div class="border rounded-3 p-3 text-center bg-light">
                                 <div class="metric-label">Rasio Vokal</div>
-                                <div id="featVowel" class="fs-3 fw-bold text-white mono my-1">--</div>
+                                <div id="featVowel" class="fs-3 fw-bold text-dark mono my-1">--</div>
                                 <div class="small text-muted" style="font-size: 0.7rem;">Huruf vokal / len</div>
                             </div>
                         </div>
 
                         <!-- Feature 3: Digit Ratio -->
                         <div class="col-6 col-md-3">
-                            <div class="border border-secondary rounded p-3 text-center bg-dark">
+                            <div class="border rounded-3 p-3 text-center bg-light">
                                 <div class="metric-label">Rasio Angka</div>
-                                <div id="featDigit" class="fs-3 fw-bold text-white mono my-1">--</div>
+                                <div id="featDigit" class="fs-3 fw-bold text-dark mono my-1">--</div>
                                 <div class="small text-muted" style="font-size: 0.7rem;">Digit 0-9 / len</div>
                             </div>
                         </div>
 
                         <!-- Feature 4: Shannon Entropy -->
                         <div class="col-6 col-md-3">
-                            <div class="border border-secondary rounded p-3 text-center bg-dark">
+                            <div class="border rounded-3 p-3 text-center bg-light">
                                 <div class="metric-label">Shannon Entropy</div>
                                 <div id="featEntropy" class="fs-3 fw-bold text-warning mono my-1">--</div>
                                 <div class="small text-muted" style="font-size: 0.7rem;">Skor keacakan (H)</div>
@@ -162,7 +162,7 @@
             <div class="card-soc p-3">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <div>
-                        <h6 class="text-white fw-bold mb-1"><i class="bi bi-shield-fill-check text-info me-2"></i>Tindakan Mitigasi Otomatis (Response Action):</h6>
+                        <h6 class="text-dark fw-bold mb-1"><i class="bi bi-shield-fill-check text-success me-2"></i>Tindakan Mitigasi Otomatis (Response Action):</h6>
                         <div id="mitigationText" class="text-muted small">Status tindakan mitigasi</div>
                     </div>
                     <div id="actionControls">
@@ -247,8 +247,8 @@
         const actControls = document.getElementById('actionControls');
 
         if (isDGA) {
-            banner.className = 'card-soc p-4 mb-3 border-2 border-danger bg-danger-subtle';
-            badge.className = 'badge bg-danger text-white px-3 py-2 fs-6 mb-2';
+            banner.className = 'card-soc p-4 mb-3 border-2 border-danger-subtle bg-danger-subtle bg-opacity-25';
+            badge.className = 'badge bg-danger text-white px-3 py-2 fs-6 mb-2 rounded-pill';
             badge.innerHTML = '<i class="bi bi-radioactive me-1"></i>TERDETEKSI SEBAGAI DGA (MALWARE C2 THREAT)';
             desc.innerHTML = `Domain ini terindikasi kuat sebagai jalur komunikasi Command and Control botnet. Probabilitas (${probPct}%) melampaui threshold ${data.threshold}.`;
             probBar.className = 'progress-bar bg-danger';
@@ -256,14 +256,14 @@
             mitText.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-x-circle-fill me-1"></i>Domain telah dicatat dalam Audit Log dan dialihkan ke DNS Sinkhole (10.10.10.254).</span>`;
             actControls.innerHTML = `<a href="/admin/firewall" class="btn btn-sm btn-danger"><i class="bi bi-fire me-1"></i>Lihat Aturan Firewall</a>`;
         } else {
-            banner.className = 'card-soc p-4 mb-3 border-2 border-success bg-success-subtle';
-            badge.className = 'badge bg-success text-white px-3 py-2 fs-6 mb-2';
+            banner.className = 'card-soc p-4 mb-3 border-2 border-success-subtle bg-success-subtle bg-opacity-25';
+            badge.className = 'badge bg-success text-white px-3 py-2 fs-6 mb-2 rounded-pill';
             badge.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>DOMAIN OPERASIONAL SAH (LEGIT)';
             desc.innerHTML = `Pola karakter memiliki struktur leksikal alami kata manusia. Probabilitas DGA (${probPct}%) berada di bawah threshold ${data.threshold}.`;
             probBar.className = 'progress-bar bg-success';
             
-            mitText.innerHTML = `<span class="text-success"><i class="bi bi-check-all me-1"></i>Lalu lintas DNS diizinkan melintasi perimeter jaringan tanpa blokir.</span>`;
-            actControls.innerHTML = `<span class="badge bg-success text-white px-3 py-2">Safe Traffic</span>`;
+            mitText.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-check-all me-1"></i>Lalu lintas DNS diizinkan melintasi perimeter jaringan tanpa blokir.</span>`;
+            actControls.innerHTML = `<span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">Safe Traffic</span>`;
         }
     }
 </script>
