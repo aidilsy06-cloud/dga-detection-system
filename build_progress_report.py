@@ -227,6 +227,19 @@ def create_report():
 
     doc.add_paragraph().paragraph_format.space_after = Pt(10)
 
+    # Insert Real phpMyAdmin Designer Screenshot (User Localhost Screenshot)
+    img_real_path = os.path.join(ASSETS_DIR, 'gambar_database_designer_cropped.jpg')
+    if os.path.exists(img_real_path):
+        doc.add_picture(img_real_path, width=Inches(6.4))
+        p_cap_real = doc.add_paragraph()
+        p_cap_real.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_cap_real.paragraph_format.space_after = Pt(14)
+        r_c_real = p_cap_real.add_run("Gambar 2: Tangkapan Layar Skema Relasi Basis Data MySQL (dga_detection_system) pada Menu Designer phpMyAdmin XAMPP")
+        r_c_real.font.name = "Arial"
+        r_c_real.font.size = Pt(8.5)
+        r_c_real.font.italic = True
+        r_c_real.font.color.rgb = c_slate
+
     # Insert ERD Diagram
     img2_path = os.path.join(ASSETS_DIR, 'gambar_2_erd_database.png')
     if os.path.exists(img2_path):
@@ -234,7 +247,7 @@ def create_report():
         p_cap2 = doc.add_paragraph()
         p_cap2.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p_cap2.paragraph_format.space_after = Pt(14)
-        r_c2 = p_cap2.add_run("Gambar 2: Entity Relationship Diagram (ERD) Basis Data Relasional Sistem")
+        r_c2 = p_cap2.add_run("Gambar 2b: Entity Relationship Diagram (ERD) Konseptual Basis Data Relasional Sistem")
         r_c2.font.name = "Arial"
         r_c2.font.size = Pt(8.5)
         r_c2.font.italic = True
