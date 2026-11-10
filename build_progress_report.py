@@ -2,9 +2,9 @@ import os
 import docx
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
-from docx.oxml import OxmlElement, parse_xml
-from docx.oxml.ns import nsdecls, qn
+from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.oxml import parse_xml
+from docx.oxml.ns import nsdecls
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ASSETS_DIR = os.path.join(BASE_DIR, 'doc_assets')
@@ -42,14 +42,14 @@ def add_caption(doc, text, c_color):
 def create_report():
     doc = docx.Document()
 
-    # Standard Academic/Executive Margins (1 inch / 2.54 cm all sides)
+    # Standard Margins (1 inch / 2.54 cm all sides)
     for section in doc.sections:
         section.top_margin = Inches(1.0)
         section.bottom_margin = Inches(1.0)
         section.left_margin = Inches(1.0)
         section.right_margin = Inches(1.0)
 
-    # Professional Color Palette
+    # Color Palette
     c_primary = RGBColor(15, 23, 42)    # Slate 900
     c_blue = RGBColor(2, 132, 199)      # Sky 600
     c_dark_blue = RGBColor(37, 99, 235) # Blue 600
@@ -61,7 +61,7 @@ def create_report():
     # ---------------------------------------------------------
     p_badge = doc.add_paragraph()
     p_badge.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run_badge = p_badge.add_run("LAPORAN PROGRESS TUGAS PROYEK REKAYASA SISTEM")
+    run_badge = p_badge.add_run("LAPORAN PROGRESS TUGAS KELOMPOK PROYEK REKAYASA SISTEM")
     run_badge.font.name = "Arial"
     run_badge.font.size = Pt(10)
     run_badge.font.bold = True
@@ -85,12 +85,13 @@ def create_report():
     run_sub.font.size = Pt(10)
     run_sub.font.color.rgb = c_slate
 
-    # Metadata Summary Table
-    tbl_meta = doc.add_table(rows=5, cols=2)
+    # Metadata Table with Group Members
+    tbl_meta = doc.add_table(rows=6, cols=2)
     tbl_meta.alignment = WD_TABLE_ALIGNMENT.CENTER
     tbl_meta.autofit = False
 
     meta_info = [
+        ("Nama Anggota Kelompok", "1. Priska Liza Utami\n2. Warda Widya Ningsih\n3. Mhd. Aidil Syahron"),
         ("Topik Proyek", "Sistem Keamanan Siber & Deteksi Ancaman Malware (DGA Detection Platform)"),
         ("Model ML Utama", "Random Forest Classifier (Akurasi: 87,59%, Presisi: 93,79%, Recall: 80,51%, F1: 86,64%)"),
         ("Mesin Basis Data", "MySQL RDBMS (XAMPP localhost:3306, Database: dga_detection_system) dengan Dual-Engine Fallback SQLite"),
@@ -100,8 +101,8 @@ def create_report():
     for i, (k, v) in enumerate(meta_info):
         row = tbl_meta.rows[i]
         c1, c2 = row.cells[0], row.cells[1]
-        c1.width = Inches(2.2)
-        c2.width = Inches(4.3)
+        c1.width = Inches(2.3)
+        c2.width = Inches(4.2)
         set_cell_background(c1, "F8FAFC")
         set_cell_background(c2, "FFFFFF")
         set_cell_margins(c1, 70, 70, 110, 110)
@@ -147,7 +148,7 @@ def create_report():
         "untuk membedakan secara instan antara domain operasional yang sah (Legit) dan domain hasil komputasi algoritma penyerang (DGA)."
     )
 
-    # Insert Architecture Diagram (Gambar 1)
+    # Gambar 1: Arsitektur Pipeline
     img1_path = os.path.join(ASSETS_DIR, 'gambar_1_arsitektur_pipeline.png')
     if os.path.exists(img1_path):
         doc.add_picture(img1_path, width=Inches(6.4))
@@ -236,26 +237,20 @@ def create_report():
 
     doc.add_paragraph().paragraph_format.space_after = Pt(8)
 
-    # Insert Real phpMyAdmin Designer Screenshot (Gambar 2 - Tangkapan Layar Asli Pengguna)
+    # Gambar 2: Screenshot Asli phpMyAdmin Designer (Full HD dari laptop pengguna)
     img_real_hd = os.path.join(ASSETS_DIR, 'gambar_asli_phpmyadmin_user_hd.png')
     img_real_crop = os.path.join(ASSETS_DIR, 'gambar_database_designer_cropped.jpg')
     img_to_use = img_real_hd if os.path.exists(img_real_hd) else img_real_crop
 
     if os.path.exists(img_to_use):
         doc.add_picture(img_to_use, width=Inches(6.4))
-        add_caption(doc, "Gambar 2: Tangkapan Layar Asli Skema Relasi Basis Data MySQL (dga_detection_system) pada Menu Designer phpMyAdmin XAMPP", c_slate)
+        add_caption(doc, "Gambar 2: Tangkapan Layar Asli Skema Relasi Basis Data MySQL (dga_detection_system) pada Menu Designer phpMyAdmin XAMPP (Localhost Pengembang)", c_slate)
 
-    # Insert ERD Diagram (Gambar 3)
+    # Gambar 3: ERD Diagram
     img2_path = os.path.join(ASSETS_DIR, 'gambar_2_erd_database.png')
     if os.path.exists(img2_path):
         doc.add_picture(img2_path, width=Inches(6.4))
         add_caption(doc, "Gambar 3: Entity Relationship Diagram (ERD) Konseptual Basis Data Relasional Sistem Deteksi DGA", c_slate)
-
-    # Insert phpMyAdmin MySQL Table Overview (Gambar 4)
-    img2c_path = os.path.join(ASSETS_DIR, 'gambar_2c_phpmyadmin_mysql.png')
-    if os.path.exists(img2c_path):
-        doc.add_picture(img2c_path, width=Inches(6.4))
-        add_caption(doc, "Gambar 4: Tangkapan Layar Ringkasan Struktur Tabel, Jumlah Rekaman Data, dan Engine InnoDB pada phpMyAdmin", c_slate)
 
     # ---------------------------------------------------------
     # BAB 3: PROGRESS PENGERJAAN TAMPILAN ANTARMUKA (INTERFACE)
@@ -271,9 +266,11 @@ def create_report():
     r_br = p_ui.add_run("Bright & Clean Modern Light Theme")
     r_br.font.bold = True
     p_ui.add_run(
-        ". Antarmuka dirancang dengan palet warna terang yang ramah mata (Eye-Comfort Light Palette) berlatar belakang putih bersih "
-        "dan abu-abu lembut (#f8fafc), dipadukan dengan tipografi profesional (Inter & JetBrains Mono), serta aksen warna pastel "
-        "untuk kartu metrik analitik. Hak akses dan tata letak menu dipisahkan secara tegas antara "
+        ". Seluruh tangkapan layar di bawah ini diambil secara langsung (live browser capture) dari aplikasi web aktif "
+        "yang berjalan pada server lokal (http://127.0.0.1:5000). Antarmuka menggunakan palet warna terang yang ramah mata "
+        "(Eye-Comfort Light Palette) berlatar belakang putih bersih dan abu-abu lembut (#f8fafc), dipadukan dengan tipografi "
+        "profesional (Inter & JetBrains Mono), serta aksen warna pastel untuk kartu metrik analitik. "
+        "Hak akses dan tata letak menu dipisahkan secara tegas antara "
     )
     r_fe = p_ui.add_run("Front-End (Security Analyst)")
     r_fe.font.bold = True
@@ -286,10 +283,9 @@ def create_report():
     add_heading_with_spacing(doc, "A. Antarmuka Pengguna Front-End (Security Analyst - SOC)", level=2, before=10, after=4)
 
     fe_points = [
-        ("Dashboard Utama (Executive Overview):", " Menampilkan 4 kartu ringkasan metrik harian (Total DNS Queries, Ancaman DGA Terdeteksi, Domain Terblokir Aktif, dan Status Tingkat Bahaya Jaringan), grafik visual tren lalu lintas kueri DNS per jam menggunakan Chart.js, serta tabel peringatan dini ancaman C2 terkini."),
-        ("Single Domain Scanner (Pemindai Mandiri):", " Alat uji instan satu nama domain (FQDN). Menampilkan nilai 4 fitur leksikal secara transparan (Domain Length, Vowel Ratio, Digit Ratio, Shannon Entropy), hasil klasifikasi (DGA Threat / Legitimate Domain), tingkat keyakinan model (Confidence Score), serta tindakan mitigasi yang diambil secara otomatis."),
-        ("Batch Upload Inspection (Inspeksi Log Massal):", " Fasilitas inspeksi file log jaringan dalam format CSV atau TXT yang berisi ribuan domain sekaligus. Dilengkapi tabel inspeksi dinamis dengan penanda badge warna status, serta fitur unduh laporan investigasi resmi ke dalam format PDF dan CSV."),
-        ("Real-Time DNS Log Stream:", " Tabel pemantauan interaktif yang menampilkan aliran kueri DNS jaringan secara langsung (live stream) mencakup stempel waktu milidetik, IP sumber lalu lintas, nama domain, skor entropi Shannon, probabilitas DGA, dan status tindakan mitigasi (Allow/Sinkhole). Dilengkapi tombol 'Simulasi DNS Traffic' untuk mendemonstrasikan penyerapan kueri jaringan.")
+        ("Dashboard Utama (Executive Overview):", " Menampilkan 4 kartu ringkasan metrik harian (Total DNS Queries: 54, Ancaman DGA: 28, Kueri Sah: 26, dan Status Tingkat Bahaya Jaringan: CRITICAL), grafik visual tren lalu lintas kueri DNS per jam menggunakan Chart.js, diagram rasio domain sah vs DGA, serta tabel peringatan dini ancaman C2 terkini."),
+        ("Single Domain Scanner (Pemindai Mandiri):", " Alat investigasi cepat bagi analis SOC untuk menguji nama domain mencurigakan (FQDN). Sistem mengekstraksi 4 fitur leksikal secara transparan (Domain Length, Vowel Ratio, Digit Ratio, Shannon Entropy), menghasilkan hasil klasifikasi (DGA Threat / Legit), skor keyakinan model (Confidence Score), serta rekomendasi tindakan mitigasi."),
+        ("Real-Time DNS Log Stream (Live Feed):", " Tabel pemantauan interaktif yang menampilkan aliran kueri DNS jaringan secara langsung (live stream) mencakup stempel waktu milidetik, IP sumber lalu lintas, nama domain, skor entropi Shannon, probabilitas DGA, dan status tindakan mitigasi (Allow/Sinkhole). Dilengkapi tombol 'Simulasikan Traffic Masuk' untuk menguji respon seketika (sub-millisecond latency).")
     ]
     for title, desc in fe_points:
         p_p = doc.add_paragraph()
@@ -304,22 +300,29 @@ def create_report():
         r_d.font.size = Pt(8.5)
         r_d.font.color.rgb = c_text
 
-    # Insert Front-End Images (Gambar 5 & 6)
-    img3_path = os.path.join(ASSETS_DIR, 'gambar_3_frontend_dashboard_scanner.png')
-    if os.path.exists(img3_path):
-        doc.add_picture(img3_path, width=Inches(6.4))
-        add_caption(doc, "Gambar 5: Tampilan Antarmuka Front-End: Executive Dashboard & Single Domain Scanner", c_slate)
+    # Gambar 4: Real Web Dashboard
+    img_dash = os.path.join(ASSETS_DIR, 'real_web_dashboard.png')
+    if os.path.exists(img_dash):
+        doc.add_picture(img_dash, width=Inches(6.4))
+        add_caption(doc, "Gambar 4: Tangkapan Layar Asli Antarmuka Front-End: Executive Security Overview & Visualisasi Tren Kueri DNS (http://127.0.0.1:5000/)", c_slate)
 
-    img4_path = os.path.join(ASSETS_DIR, 'gambar_4_frontend_batch_stream.png')
-    if os.path.exists(img4_path):
-        doc.add_picture(img4_path, width=Inches(6.4))
-        add_caption(doc, "Gambar 6: Tampilan Antarmuka Front-End: Batch Upload Inspection & Real-Time DNS Stream", c_slate)
+    # Gambar 5: Real Web Single Scanner
+    img_scan = os.path.join(ASSETS_DIR, 'real_web_scanner.png')
+    if os.path.exists(img_scan):
+        doc.add_picture(img_scan, width=Inches(6.4))
+        add_caption(doc, "Gambar 5: Tangkapan Layar Asli Antarmuka Front-End: Pemindai Domain Mandiri / Instant Scanner (http://127.0.0.1:5000/analyst/scanner)", c_slate)
+
+    # Gambar 6: Real Web DNS Stream
+    img_stream = os.path.join(ASSETS_DIR, 'real_web_dns_stream.png')
+    if os.path.exists(img_stream):
+        doc.add_picture(img_stream, width=Inches(6.4))
+        add_caption(doc, "Gambar 6: Tangkapan Layar Asli Antarmuka Front-End: Real-Time DNS Log Stream & Simulasi Traffic (http://127.0.0.1:5000/analyst/stream)", c_slate)
 
     # Subsection B: Back-End
     add_heading_with_spacing(doc, "B. Antarmuka Administrator Back-End (System & Security Admin)", level=2, before=10, after=4)
 
     be_points = [
-        ("Model Management & Evaluation Metrics:", " Dasbor evaluasi kualitas algoritma aktif yang menampilkan 4 metrik performa utama: Akurasi (87,59%), Presisi (93,79%), Recall (80,51%), dan F1-Score (86,64%). Dilengkapi visualisasi Confusion Matrix 2x2 interaktif (TP: 665, FP: 44, FN: 161, TN: 782) untuk mendeteksi pergeseran kualitas prediksi."),
+        ("Model Management & Evaluation Metrics:", " Dasbor evaluasi kualitas algoritma aktif yang menampilkan 4 metrik performa utama: Akurasi (87,59%), Presisi (93,79%), Recall (80,51%), dan F1-Score (86,64%). Dilengkapi visualisasi Confusion Matrix 2x2 (TP: 665, FP: 44, FN: 161, TN: 782) serta grafik Feature Importance leksikal."),
         ("Decision Threshold Tuning:", " Slider interaktif (0.10 hingga 0.90) yang memungkinkan administrator menggeser ambang batas klasifikasi (dari default 0,50 ke rentang optimal 0,40–0,42) untuk meningkatkan sensitivitas deteksi (Recall) terhadap varian DGA agresif tanpa perlu memprogram ulang model."),
         ("Firewall & DNS Sinkhole Integration:", " Modul sinkronisasi yang mengubah temuan DGA menjadi format aturan jaringan perimeter. Menampilkan daftar domain terisolasi ke DNS Sinkhole (10.10.10.254), serta tombol ekspor aturan ke format Linux iptables dan Cisco/BIND9 Response Policy Zone (RPZ)."),
         ("Dataset Management & Retraining Pipeline:", " Statistik korpus latihan (1.338 sampel domain), fasilitas upload dataset CSV/Excel baru, dan tombol retraining model otomatis yang mengekstraksi ulang fitur leksikal dan memperbarui model Random Forest secara langsung di server."),
@@ -340,21 +343,41 @@ def create_report():
         r_d.font.size = Pt(8.5)
         r_d.font.color.rgb = c_text
 
-    # Insert Back-End Images (Gambar 7, 8, 9)
-    img5_path = os.path.join(ASSETS_DIR, 'gambar_5_admin_model_threshold.png')
-    if os.path.exists(img5_path):
-        doc.add_picture(img5_path, width=Inches(6.4))
-        add_caption(doc, "Gambar 7: Tampilan Antarmuka Back-End: Model Management Confusion Matrix & Threshold Tuning", c_slate)
+    # Gambar 7: Real Web Model Management
+    img_model = os.path.join(ASSETS_DIR, 'real_web_admin_model.png')
+    if os.path.exists(img_model):
+        doc.add_picture(img_model, width=Inches(6.4))
+        add_caption(doc, "Gambar 7: Tangkapan Layar Asli Antarmuka Back-End: Model Management, Confusion Matrix & Metrik Evaluasi (http://127.0.0.1:5000/admin/model)", c_slate)
 
-    img6_path = os.path.join(ASSETS_DIR, 'gambar_6_admin_firewall_dataset.png')
-    if os.path.exists(img6_path):
-        doc.add_picture(img6_path, width=Inches(6.4))
-        add_caption(doc, "Gambar 8: Tampilan Antarmuka Back-End: Firewall Sinkhole Integration & Dataset Retraining Pipeline", c_slate)
+    # Gambar 8: Real Web Decision Threshold Slider
+    img_thresh = os.path.join(ASSETS_DIR, 'real_web_admin_threshold.png')
+    if os.path.exists(img_thresh):
+        doc.add_picture(img_thresh, width=Inches(6.4))
+        add_caption(doc, "Gambar 8: Tangkapan Layar Asli Antarmuka Back-End: Decision Threshold Tuning Slider (http://127.0.0.1:5000/admin/threshold)", c_slate)
 
-    img7_path = os.path.join(ASSETS_DIR, 'gambar_7_admin_api_health_audit.png')
-    if os.path.exists(img7_path):
-        doc.add_picture(img7_path, width=Inches(6.4))
-        add_caption(doc, "Gambar 9: Tampilan Antarmuka Back-End: API/Webhook Dispatcher, Health Monitor, & Audit Trail", c_slate)
+    # Gambar 9: Real Web Firewall & Sinkhole
+    img_fw = os.path.join(ASSETS_DIR, 'real_web_admin_firewall.png')
+    if os.path.exists(img_fw):
+        doc.add_picture(img_fw, width=Inches(6.4))
+        add_caption(doc, "Gambar 9: Tangkapan Layar Asli Antarmuka Back-End: Firewall & DNS Sinkhole Integration (http://127.0.0.1:5000/admin/firewall)", c_slate)
+
+    # Gambar 10: Real Web Dataset Management
+    img_data = os.path.join(ASSETS_DIR, 'real_web_admin_dataset.png')
+    if os.path.exists(img_data):
+        doc.add_picture(img_data, width=Inches(6.4))
+        add_caption(doc, "Gambar 10: Tangkapan Layar Asli Antarmuka Back-End: Dataset Management & Retraining Pipeline (http://127.0.0.1:5000/admin/dataset)", c_slate)
+
+    # Gambar 11: Real Web System Health
+    img_health = os.path.join(ASSETS_DIR, 'real_web_admin_health.png')
+    if os.path.exists(img_health):
+        doc.add_picture(img_health, width=Inches(6.4))
+        add_caption(doc, "Gambar 11: Tangkapan Layar Asli Antarmuka Back-End: System Health & Infrastructure Monitoring (http://127.0.0.1:5000/admin/health)", c_slate)
+
+    # Gambar 12: Real Web User Control & Audit Trail
+    img_audit = os.path.join(ASSETS_DIR, 'real_web_admin_audit.png')
+    if os.path.exists(img_audit):
+        doc.add_picture(img_audit, width=Inches(6.4))
+        add_caption(doc, "Gambar 12: Tangkapan Layar Asli Antarmuka Back-End: User Access Control & Immutable Audit Trail (http://127.0.0.1:5000/admin/users)", c_slate)
 
     # ---------------------------------------------------------
     # BAB 4: RENCANA KERJA: YANG BELUM DAN AKAN DIKERJAKAN (ROADMAP)
