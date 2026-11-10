@@ -154,14 +154,15 @@ def create_report():
     p_db.paragraph_format.line_spacing = 1.15
     p_db.paragraph_format.space_after = Pt(8)
     p_db.add_run(
-        "Basis data sistem telah selesai dibangun secara menyeluruh menggunakan mesin basis data relasional "
+        "Basis data sistem telah selesai dibangun secara menyeluruh menggunakan mesin basis data relasional server "
     )
-    r_sql = p_db.add_run("SQLite 3 (database.db)")
+    r_sql = p_db.add_run("MySQL (XAMPP MariaDB pada port 3306, nama database: dga_detection_system)")
     r_sql.font.bold = True
     p_db.add_run(
-        ". Struktur tabel dirancang dengan integritas data tinggi untuk mendukung operasi pembacaan kueri cepat "
-        "(high-throughput read), pencatatan jejak audit regulasi keamanan (immutable audit trail), penyimpanan metrik evaluasi model, "
-        "serta isolasi otomatis domain berbahaya ke DNS Sinkhole. Terdapat 8 tabel utama yang telah aktif dan terisi data operasional:"
+        " dengan dukungan dual-engine fallback ke SQLite (database.db). Struktur tabel dirancang dengan integritas data tinggi, "
+        "indeksasi cepat untuk pencarian kueri DNS skala masif (high-throughput read), pencatatan jejak audit regulasi keamanan "
+        "(immutable audit trail), penyimpanan metrik evaluasi model, serta isolasi otomatis domain berbahaya ke DNS Sinkhole. "
+        "Terdapat 8 tabel utama yang telah aktif dan terisi penuh data operasional:"
     )
 
     # Table of DB Tables
@@ -251,6 +252,19 @@ def create_report():
         r_c2b.font.size = Pt(8.5)
         r_c2b.font.italic = True
         r_c2b.font.color.rgb = c_slate
+
+    # Insert phpMyAdmin MySQL Screenshot
+    img2c_path = os.path.join(ASSETS_DIR, 'gambar_2c_phpmyadmin_mysql.png')
+    if os.path.exists(img2c_path):
+        doc.add_picture(img2c_path, width=Inches(6.4))
+        p_cap2c = doc.add_paragraph()
+        p_cap2c.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_cap2c.paragraph_format.space_after = Pt(14)
+        r_c2c = p_cap2c.add_run("Gambar 2c: Tampilan Manajemen Basis Data MySQL (dga_detection_system) pada phpMyAdmin XAMPP")
+        r_c2c.font.name = "Arial"
+        r_c2c.font.size = Pt(8.5)
+        r_c2c.font.italic = True
+        r_c2c.font.color.rgb = c_slate
 
     # ---------------------------------------------------------
     # BAB II: PROGRESS TAMPILAN / INTERFACE

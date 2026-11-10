@@ -32,12 +32,9 @@ app = Flask(__name__)
 app.secret_key = "dga_cyber_soc_master_key_9921_secret"
 
 # -------------------------------------------------------------
-# Database Connection & Helpers
+# Database Connection & Helpers (MySQL with SQLite Fallback)
 # -------------------------------------------------------------
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+from db import get_db, get_db_info
 
 def get_setting(key, default=None):
     conn = get_db()
@@ -171,7 +168,8 @@ def inject_global_data():
         header_total_queries=total_queries,
         header_dga_threats=dga_threats,
         header_blocked_count=blocked_count,
-        header_threat_level=threat_level
+        header_threat_level=threat_level,
+        db_info=get_db_info()
     )
 
 @app.route('/switch-role/<role>')
@@ -662,7 +660,8 @@ def admin_dataset():
 @app.route('/admin/dataset/export')
 def admin_dataset_export():
     conn = get_db()
-    df = pd.read_sql_query("SELECT domain, length, vowel_ratio, digit_ratio, shannon_entropy, label FROM dataset", conn)
+    rows = conn.execute("SELECT domain, length, vowel_ratio, digit_ratio, shannon_entropy, label FROM dataset").fetchall()
+    df = pd.DataFrame(rows)
     conn.close()
     
     out_path = os.path.join(UPLOAD_FOLDER, 'dataset_dga_exported.xlsx')
@@ -742,7 +741,8 @@ def admin_dataset_retrain():
     algo_choice = request.form.get('algo', 'rf')
     
     conn = get_db()
-    df = pd.read_sql_query("SELECT domain, length, vowel_ratio, digit_ratio, shannon_entropy, label FROM dataset", conn)
+    rows = conn.execute("SELECT domain, length, vowel_ratio, digit_ratio, shannon_entropy, label FROM dataset").fetchall()
+    df = pd.DataFrame(rows)
     
     if len(df) < 50:
         conn.close()

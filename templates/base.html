@@ -387,6 +387,11 @@
                 <div class="small text-muted">
                     Engine: <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle-fill me-1"></i>Random Forest ML</span>
                 </div>
+                <div class="small text-muted">
+                    Database: <span class="badge {% if db_info and db_info.is_mysql %}bg-primary-subtle text-primary border border-primary-subtle{% else %}bg-secondary-subtle text-secondary border{% endif %}">
+                        <i class="bi bi-database-check me-1"></i>{% if db_info %}{{ db_info.type }}{% else %}MYSQL{% endif %}
+                    </span>
+                </div>
             </div>
 
             <!-- Right Controls: Role Switcher & User Profile -->
