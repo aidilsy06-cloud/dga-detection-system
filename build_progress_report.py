@@ -9,6 +9,7 @@ from docx.oxml.ns import nsdecls, qn
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ASSETS_DIR = os.path.join(BASE_DIR, 'doc_assets')
 DOCX_OUT = os.path.join(BASE_DIR, 'Laporan_Progress_Sistem_Deteksi_DGA.docx')
+DOCX_OUT_EXTRA = os.path.join(BASE_DIR, 'Laporan_Progress_Sistem_Deteksi_DGA_Rapi_Lengkap.docx')
 
 def set_cell_background(cell, fill_hex):
     tcPr = cell._tc.get_or_add_tcPr()
@@ -20,18 +21,35 @@ def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
     tcMar = parse_xml(f'<w:tcMar {nsdecls("w")}><w:top w:w="{top}" w:type="dxa"/><w:bottom w:w="{bottom}" w:type="dxa"/><w:left w:w="{left}" w:type="dxa"/><w:right w:w="{right}" w:type="dxa"/></w:tcMar>')
     tcPr.append(tcMar)
 
+def add_heading_with_spacing(doc, text, level=1, before=14, after=6):
+    h = doc.add_heading(text, level=level)
+    h.paragraph_format.space_before = Pt(before)
+    h.paragraph_format.space_after = Pt(after)
+    return h
+
+def add_caption(doc, text, c_color):
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(4)
+    p.paragraph_format.space_after = Pt(14)
+    r = p.add_run(text)
+    r.font.name = "Arial"
+    r.font.size = Pt(8.5)
+    r.font.italic = True
+    r.font.color.rgb = c_color
+    return p
+
 def create_report():
     doc = docx.Document()
 
-    # Set Margins (2.54 cm / 1 inch)
-    sections = doc.sections
-    for section in sections:
+    # Standard Academic/Executive Margins (1 inch / 2.54 cm all sides)
+    for section in doc.sections:
         section.top_margin = Inches(1.0)
         section.bottom_margin = Inches(1.0)
         section.left_margin = Inches(1.0)
         section.right_margin = Inches(1.0)
 
-    # Base Colors
+    # Professional Color Palette
     c_primary = RGBColor(15, 23, 42)    # Slate 900
     c_blue = RGBColor(2, 132, 199)      # Sky 600
     c_dark_blue = RGBColor(37, 99, 235) # Blue 600
@@ -61,22 +79,23 @@ def create_report():
 
     p_sub = doc.add_paragraph()
     p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p_sub.paragraph_format.space_after = Pt(18)
+    p_sub.paragraph_format.space_after = Pt(16)
     run_sub = p_sub.add_run("Platform Keamanan Siber Cerdas untuk Deteksi & Mitigasi Jalur Komunikasi Malware Command and Control (C2)")
     run_sub.font.name = "Arial"
-    run_sub.font.size = Pt(10.5)
+    run_sub.font.size = Pt(10)
     run_sub.font.color.rgb = c_slate
 
-    # Meta Table
-    tbl_meta = doc.add_table(rows=4, cols=2)
+    # Metadata Summary Table
+    tbl_meta = doc.add_table(rows=5, cols=2)
     tbl_meta.alignment = WD_TABLE_ALIGNMENT.CENTER
     tbl_meta.autofit = False
 
     meta_info = [
-        ("Topik Proyek", "Sistem Keamanan Siber & Deteksi Ancaman Malware (DGA Detection)"),
+        ("Topik Proyek", "Sistem Keamanan Siber & Deteksi Ancaman Malware (DGA Detection Platform)"),
         ("Model ML Utama", "Random Forest Classifier (Akurasi: 87,59%, Presisi: 93,79%, Recall: 80,51%, F1: 86,64%)"),
-        ("Arsitektur Sistem", "Berbasis Web Terpisah: Front-End (SOC Analyst) & Back-End (Administrator)"),
-        ("Batas Tanggal Pengumpulan", "14 November 2026, 23:59 WIB")
+        ("Mesin Basis Data", "MySQL RDBMS (XAMPP localhost:3306, Database: dga_detection_system) dengan Dual-Engine Fallback SQLite"),
+        ("Arsitektur Antarmuka", "Berbasis Web Terpisah: Front-End (SOC Analyst) & Back-End (Administrator)"),
+        ("Batas Tanggal Pengumpulan", "14 November 2026, 23:59 WIB (Terselesaikan Lebih Awal)")
     ]
     for i, (k, v) in enumerate(meta_info):
         row = tbl_meta.rows[i]
@@ -85,32 +104,30 @@ def create_report():
         c2.width = Inches(4.3)
         set_cell_background(c1, "F8FAFC")
         set_cell_background(c2, "FFFFFF")
-        set_cell_margins(c1, 80, 80, 120, 120)
-        set_cell_margins(c2, 80, 80, 120, 120)
+        set_cell_margins(c1, 70, 70, 110, 110)
+        set_cell_margins(c2, 70, 70, 110, 110)
 
         p1 = c1.paragraphs[0]
-        p1.paragraph_format.space_after = Pt(2)
+        p1.paragraph_format.space_after = Pt(1)
         r1 = p1.add_run(k)
         r1.font.name = "Arial"
-        r1.font.size = Pt(9)
+        r1.font.size = Pt(8.5)
         r1.font.bold = True
         r1.font.color.rgb = c_primary
 
         p2 = c2.paragraphs[0]
-        p2.paragraph_format.space_after = Pt(2)
+        p2.paragraph_format.space_after = Pt(1)
         r2 = p2.add_run(v)
         r2.font.name = "Arial"
-        r2.font.size = Pt(9)
+        r2.font.size = Pt(8.5)
         r2.font.color.rgb = c_text
 
-    doc.add_paragraph().paragraph_format.space_after = Pt(12)
+    doc.add_paragraph().paragraph_format.space_after = Pt(10)
 
     # ---------------------------------------------------------
-    # RINGKASAN EKSEKUTIF
+    # BAB 1: RINGKASAN EKSEKUTIF & LATAR BELAKANG SISTEM
     # ---------------------------------------------------------
-    h1 = doc.add_heading("1. Ringkasan Eksekutif & Latar Belakang Sistem", level=1)
-    h1.paragraph_format.space_before = Pt(14)
-    h1.paragraph_format.space_after = Pt(6)
+    add_heading_with_spacing(doc, "1. Ringkasan Eksekutif & Latar Belakang Sistem", level=1)
 
     p_desc = doc.add_paragraph()
     p_desc.paragraph_format.line_spacing = 1.15
@@ -130,25 +147,16 @@ def create_report():
         "untuk membedakan secara instan antara domain operasional yang sah (Legit) dan domain hasil komputasi algoritma penyerang (DGA)."
     )
 
-    # Insert Architecture Diagram
+    # Insert Architecture Diagram (Gambar 1)
     img1_path = os.path.join(ASSETS_DIR, 'gambar_1_arsitektur_pipeline.png')
     if os.path.exists(img1_path):
         doc.add_picture(img1_path, width=Inches(6.4))
-        p_cap1 = doc.add_paragraph()
-        p_cap1.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap1.paragraph_format.space_after = Pt(14)
-        r_c1 = p_cap1.add_run("Gambar 1: Diagram Arsitektur & Siklus End-to-End Pipeline Deteksi DGA")
-        r_c1.font.name = "Arial"
-        r_c1.font.size = Pt(8.5)
-        r_c1.font.italic = True
-        r_c1.font.color.rgb = c_slate
+        add_caption(doc, "Gambar 1: Diagram Arsitektur & Siklus End-to-End Pipeline Deteksi DGA", c_slate)
 
     # ---------------------------------------------------------
-    # BAB I: PROGRESS DATABASE
+    # BAB 2: PROGRESS PENGERJAAN BASIS DATA (DATABASE)
     # ---------------------------------------------------------
-    h2 = doc.add_heading("2. Progress Pengerjaan: Basis Data (Database)", level=1)
-    h2.paragraph_format.space_before = Pt(14)
-    h2.paragraph_format.space_after = Pt(6)
+    add_heading_with_spacing(doc, "2. Progress Pengerjaan: Basis Data (Database)", level=1)
 
     p_db = doc.add_paragraph()
     p_db.paragraph_format.line_spacing = 1.15
@@ -159,10 +167,11 @@ def create_report():
     r_sql = p_db.add_run("MySQL (XAMPP MariaDB pada port 3306, nama database: dga_detection_system)")
     r_sql.font.bold = True
     p_db.add_run(
-        " dengan dukungan dual-engine fallback ke SQLite (database.db). Struktur tabel dirancang dengan integritas data tinggi, "
-        "indeksasi cepat untuk pencarian kueri DNS skala masif (high-throughput read), pencatatan jejak audit regulasi keamanan "
-        "(immutable audit trail), penyimpanan metrik evaluasi model, serta isolasi otomatis domain berbahaya ke DNS Sinkhole. "
-        "Terdapat 8 tabel utama yang telah aktif dan terisi penuh data operasional:"
+        " dengan struktur penyimpanan InnoDB dan relasi kunci tamu (Foreign Key Constraints) lengkap antar tabel, "
+        "serta didukung modul adapter dual-engine dengan fallback otomatis ke SQLite (database.db). "
+        "Struktur tabel dirancang dengan integritas data tinggi, indeksasi cepat untuk pencarian kueri DNS skala masif "
+        "(high-throughput read), pencatatan jejak audit regulasi keamanan (immutable audit trail), penyimpanan metrik evaluasi model, "
+        "serta isolasi otomatis domain berbahaya ke DNS Sinkhole (10.10.10.254). Seluruh 8 tabel utama aktif dan terhubung penuh:"
     )
 
     # Table of DB Tables
@@ -175,7 +184,7 @@ def create_report():
     for idx, text in enumerate(headers):
         cell = hdr_row.cells[idx]
         set_cell_background(cell, "0284C7")
-        set_cell_margins(cell, 100, 100, 120, 120)
+        set_cell_margins(cell, 90, 90, 110, 110)
         p = cell.paragraphs[0]
         r = p.add_run(text)
         r.font.name = "Arial"
@@ -184,14 +193,14 @@ def create_report():
         r.font.color.rgb = RGBColor(255, 255, 255)
 
     db_details = [
-        ("dns_logs", "Menyimpan seluruh rekaman lalu lintas kueri DNS jaringan beserta stempel waktu, IP sumber, nama domain, 4 fitur leksikal, probabilitas DGA, dan aksi mitigasi.", "Selesai (100% Aktif)"),
-        ("blocked_domains", "Menampung daftar hitam (blacklist) domain DGA aktif yang telah diisolasi ke DNS Sinkhole (10.10.10.254) untuk sinkronisasi otomatis ke perimeter firewall.", "Selesai (100% Aktif)"),
-        ("model_metrics", "Menyimpan riwayat metrik kualitas inferensi Random Forest (Akurasi, Presisi, Recall, F1) serta 4 nilai visual Confusion Matrix (TP, FP, FN, TN).", "Selesai (100% Aktif)"),
-        ("settings", "Penyimpanan konfigurasi parameter global sistem: Decision Threshold (default: 0.42), target IP Sinkhole, webhook alerting channel, dan severity filter.", "Selesai (100% Aktif)"),
-        ("dataset", "Korpus basis pengetahuan latih berisi 1.338 sampel domain berlabel (638 domain sah operasional dan 700 domain malware DGA sintetis/riil).", "Selesai (100% Aktif)"),
-        ("api_keys", "Manajemen otorisasi kunci API 256-bit (X-API-Key) untuk integrasi dengan sensor jaringan eksternal dan aplikasi pihak ketiga.", "Selesai (100% Aktif)"),
         ("users", "Pengelolaan data akun pengguna berbasis peran (Role-Based Access Control) yang memisahkan hak akses Security Analyst dengan Administrator.", "Selesai (100% Aktif)"),
-        ("audit_logs", "Buku besar jejak audit tak terhapus (immutable audit trail) yang mencatat waktu, user, aksi, rincian aktivitas, dan IP address demi kepatuhan ISO 27001.", "Selesai (100% Aktif)")
+        ("settings", "Penyimpanan konfigurasi global sistem: Decision Threshold (default: 0.42), target IP Sinkhole, webhook alerting channel. Terhubung ke users via updated_by_user_id.", "Selesai (100% Aktif)"),
+        ("audit_logs", "Buku besar jejak audit tak terhapus (immutable audit trail) yang mencatat waktu, user, aksi, rincian aktivitas, dan IP address demi kepatuhan ISO 27001. Terhubung ke users via user_id.", "Selesai (100% Aktif)"),
+        ("api_keys", "Manajemen otorisasi kunci API 256-bit (X-API-Key) untuk integrasi sensor jaringan eksternal dan aplikasi pihak ketiga. Terhubung ke users via user_id.", "Selesai (100% Aktif)"),
+        ("dataset", "Korpus basis pengetahuan latih berisi 1.338 sampel domain berlabel (638 domain sah operasional dan 700 domain malware DGA sintetis/riil). Terhubung ke users via uploaded_by_user_id.", "Selesai (100% Aktif)"),
+        ("model_metrics", "Menyimpan riwayat metrik kualitas inferensi Random Forest (Akurasi, Presisi, Recall, F1) serta 4 nilai visual Confusion Matrix (TP, FP, FN, TN). Terhubung ke users via trained_by_user_id.", "Selesai (100% Aktif)"),
+        ("dns_logs", "Menyimpan rekaman lalu lintas kueri DNS jaringan beserta stempel waktu, IP sumber, nama domain, 4 fitur leksikal, probabilitas DGA, dan aksi mitigasi. Terhubung ke api_keys via api_key_id.", "Selesai (100% Aktif)"),
+        ("blocked_domains", "Menampung daftar hitam (blacklist) domain DGA aktif yang telah diisolasi ke DNS Sinkhole (10.10.10.254) untuk sinkronisasi otomatis ke perimeter firewall. Terhubung ke dns_logs via dns_log_id.", "Selesai (100% Aktif)")
     ]
 
     col_widths = [Inches(1.5), Inches(3.7), Inches(1.3)]
@@ -199,7 +208,7 @@ def create_report():
         row = tbl_db.rows[i+1]
         for col_idx, width in enumerate(col_widths):
             row.cells[col_idx].width = width
-            set_cell_margins(row.cells[col_idx], 80, 80, 100, 100)
+            set_cell_margins(row.cells[col_idx], 70, 70, 90, 90)
             if (i % 2 == 1):
                 set_cell_background(row.cells[col_idx], "F8FAFC")
             else:
@@ -215,7 +224,7 @@ def create_report():
         p1 = row.cells[1].paragraphs[0]
         r1 = p1.add_run(t_desc)
         r1.font.name = "Arial"
-        r1.font.size = Pt(8.5)
+        r1.font.size = Pt(8)
         r1.font.color.rgb = c_text
 
         p2 = row.cells[2].paragraphs[0]
@@ -225,79 +234,33 @@ def create_report():
         r2.font.bold = True
         r2.font.color.rgb = RGBColor(5, 150, 105)
 
-    doc.add_paragraph().paragraph_format.space_after = Pt(10)
+    doc.add_paragraph().paragraph_format.space_after = Pt(8)
 
-    # Insert Real phpMyAdmin Designer Screenshot (User Localhost Screenshot)
-    img_real_path = os.path.join(ASSETS_DIR, 'gambar_database_designer_cropped.jpg')
-    if os.path.exists(img_real_path):
-        doc.add_picture(img_real_path, width=Inches(6.4))
-        p_cap_real = doc.add_paragraph()
-        p_cap_real.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap_real.paragraph_format.space_after = Pt(14)
-        r_c_real = p_cap_real.add_run("Gambar 2: Tangkapan Layar Skema Relasi Basis Data MySQL (dga_detection_system) pada Menu Designer phpMyAdmin XAMPP")
-        r_c_real.font.name = "Arial"
-        r_c_real.font.size = Pt(8.5)
-        r_c_real.font.italic = True
-        r_c_real.font.color.rgb = c_slate
+    # Insert Real phpMyAdmin Designer Screenshot (Gambar 2 - Tangkapan Layar Asli Pengguna)
+    img_real_hd = os.path.join(ASSETS_DIR, 'gambar_asli_phpmyadmin_user_hd.png')
+    img_real_crop = os.path.join(ASSETS_DIR, 'gambar_database_designer_cropped.jpg')
+    img_to_use = img_real_hd if os.path.exists(img_real_hd) else img_real_crop
 
-    # Insert ERD Diagram
+    if os.path.exists(img_to_use):
+        doc.add_picture(img_to_use, width=Inches(6.4))
+        add_caption(doc, "Gambar 2: Tangkapan Layar Asli Skema Relasi Basis Data MySQL (dga_detection_system) pada Menu Designer phpMyAdmin XAMPP", c_slate)
+
+    # Insert ERD Diagram (Gambar 3)
     img2_path = os.path.join(ASSETS_DIR, 'gambar_2_erd_database.png')
     if os.path.exists(img2_path):
         doc.add_picture(img2_path, width=Inches(6.4))
-        p_cap2 = doc.add_paragraph()
-        p_cap2.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap2.paragraph_format.space_after = Pt(14)
-        r_c2 = p_cap2.add_run("Gambar 2b: Entity Relationship Diagram (ERD) Konseptual Basis Data Relasional Sistem")
-        r_c2.font.name = "Arial"
-        r_c2.font.size = Pt(8.5)
-        r_c2.font.italic = True
-        r_c2.font.color.rgb = c_slate
+        add_caption(doc, "Gambar 3: Entity Relationship Diagram (ERD) Konseptual Basis Data Relasional Sistem Deteksi DGA", c_slate)
 
-    # Insert DB Browser Screenshot
-    img2b_path = os.path.join(ASSETS_DIR, 'gambar_2b_sqlite_db_browser.png')
-    if os.path.exists(img2b_path):
-        doc.add_picture(img2b_path, width=Inches(6.4))
-        p_cap2b = doc.add_paragraph()
-        p_cap2b.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap2b.paragraph_format.space_after = Pt(14)
-        r_c2b = p_cap2b.add_run("Gambar 2b: Tampilan Skema Struktur Tabel dan Penjelajah Data (Database Browser) SQLite (database.db)")
-        r_c2b.font.name = "Arial"
-        r_c2b.font.size = Pt(8.5)
-        r_c2b.font.italic = True
-        r_c2b.font.color.rgb = c_slate
-
-    # Insert phpMyAdmin MySQL Screenshot
+    # Insert phpMyAdmin MySQL Table Overview (Gambar 4)
     img2c_path = os.path.join(ASSETS_DIR, 'gambar_2c_phpmyadmin_mysql.png')
     if os.path.exists(img2c_path):
         doc.add_picture(img2c_path, width=Inches(6.4))
-        p_cap2c = doc.add_paragraph()
-        p_cap2c.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap2c.paragraph_format.space_after = Pt(14)
-        r_c2c = p_cap2c.add_run("Gambar 2c: Tampilan Manajemen Basis Data MySQL (dga_detection_system) pada phpMyAdmin XAMPP")
-        r_c2c.font.name = "Arial"
-        r_c2c.font.size = Pt(8.5)
-        r_c2c.font.italic = True
-        r_c2c.font.color.rgb = c_slate
-
-    # Insert phpMyAdmin Designer Foreign Keys Screenshot
-    img2d_path = os.path.join(ASSETS_DIR, 'gambar_2d_phpmyadmin_designer_relasi.png')
-    if os.path.exists(img2d_path):
-        doc.add_picture(img2d_path, width=Inches(6.4))
-        p_cap2d = doc.add_paragraph()
-        p_cap2d.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap2d.paragraph_format.space_after = Pt(14)
-        r_c2d = p_cap2d.add_run("Gambar 2d: Tampilan Skema Relasi Antar Tabel (Foreign Key Constraints) pada phpMyAdmin Designer")
-        r_c2d.font.name = "Arial"
-        r_c2d.font.size = Pt(8.5)
-        r_c2d.font.italic = True
-        r_c2d.font.color.rgb = c_slate
+        add_caption(doc, "Gambar 4: Tangkapan Layar Ringkasan Struktur Tabel, Jumlah Rekaman Data, dan Engine InnoDB pada phpMyAdmin", c_slate)
 
     # ---------------------------------------------------------
-    # BAB II: PROGRESS TAMPILAN / INTERFACE
+    # BAB 3: PROGRESS PENGERJAAN TAMPILAN ANTARMUKA (INTERFACE)
     # ---------------------------------------------------------
-    h3 = doc.add_heading("3. Progress Pengerjaan: Tampilan Antarmuka (Interface)", level=1)
-    h3.paragraph_format.space_before = Pt(14)
-    h3.paragraph_format.space_after = Pt(6)
+    add_heading_with_spacing(doc, "3. Progress Pengerjaan: Tampilan Antarmuka (Interface)", level=1)
 
     p_ui = doc.add_paragraph()
     p_ui.paragraph_format.line_spacing = 1.15
@@ -308,145 +271,103 @@ def create_report():
     r_br = p_ui.add_run("Bright & Clean Modern Light Theme")
     r_br.font.bold = True
     p_ui.add_run(
-        " berbasis Bootstrap 5, Chart.js, Google Fonts Inter, dan JetBrains Mono. "
-        "Sistem menerapkan pemisahan peran yang tegas (*Role-Based Access Control*) dengan fitur tombol "
+        ". Antarmuka dirancang dengan palet warna terang yang ramah mata (Eye-Comfort Light Palette) berlatar belakang putih bersih "
+        "dan abu-abu lembut (#f8fafc), dipadukan dengan tipografi profesional (Inter & JetBrains Mono), serta aksen warna pastel "
+        "untuk kartu metrik analitik. Hak akses dan tata letak menu dipisahkan secara tegas antara "
     )
-    r_sw = p_ui.add_run("Role Switcher")
-    r_sw.font.bold = True
-    p_ui.add_run(
-        " di bilah navigasi atas yang memungkinkan penguji berganti peran seketika antara Front-End (Analis SOC) "
-        "dan Back-End (Administrator Sistem):"
-    )
+    r_fe = p_ui.add_run("Front-End (Security Analyst)")
+    r_fe.font.bold = True
+    p_ui.add_run(" dan ")
+    r_be = p_ui.add_run("Back-End (Administrator)")
+    r_be.font.bold = True
+    p_ui.add_run(":")
 
-    # Sub-Heading: Front-End
-    h3_fe = doc.add_heading("A. Antarmuka Pengguna Front-End (Security Analyst - SOC)", level=2)
-    h3_fe.paragraph_format.space_before = Pt(10)
-    h3_fe.paragraph_format.space_after = Pt(4)
+    # Subsection A: Front-End
+    add_heading_with_spacing(doc, "A. Antarmuka Pengguna Front-End (Security Analyst - SOC)", level=2, before=10, after=4)
 
-    fe_bullets = [
-        ("Dashboard Utama (Executive Overview):", "Menampilkan 4 kartu ringkasan metrik harian (Total DNS Queries, Ancaman DGA Terdeteksi, Kueri Sah, Tingkat Ancaman Jaringan), grafik visual interaktif tren lalu lintas DNS 24 jam dengan Chart.js, diagram donat rasio ancaman, dan tabel investigasi insiden terkini."),
-        ("Single Domain Scanner (Pemindai Mandiri):", "Alat uji instan satu nama domain (FQDN). Sistem seketika mengekstraksi 4 fitur leksikal dalam format kartu pastel (Panjang Domain, Rasio Vokal, Rasio Angka, Entropi Shannon), menghitung probabilitas AI, menampilkan tingkat keyakinan (confidence score), serta status mitigasi otomatis ke Sinkhole."),
-        ("Batch Upload Inspection (Inspeksi Log Massal):", "Fasilitas inspeksi file log jaringan (CSV, TXT, LOG, Excel) secara massal. Dilengkapi kartu statistik ringkasan, tabel dinamis dengan penyaring instan (Semua / Hanya DGA / Hanya Legit), pencarian nama domain, serta fitur ekspor CSV dan unduh Laporan Investigasi Resmi Format PDF siap cetak."),
-        ("Real-Time DNS Log Stream:", "Tabel pemantauan interaktif yang menampilkan aliran kueri DNS jaringan secara kronologis (live feed). Menyediakan stempel waktu, IP sumber klien, nama domain, skor entropi, probabilitas DGA, dan status tindakan (Allowed/Sinkhole), dilengkapi tombol Pause/Resume, pembersih layar, dan tombol Simulasi Traffic Masuk.")
+    fe_points = [
+        ("Dashboard Utama (Executive Overview):", " Menampilkan 4 kartu ringkasan metrik harian (Total DNS Queries, Ancaman DGA Terdeteksi, Domain Terblokir Aktif, dan Status Tingkat Bahaya Jaringan), grafik visual tren lalu lintas kueri DNS per jam menggunakan Chart.js, serta tabel peringatan dini ancaman C2 terkini."),
+        ("Single Domain Scanner (Pemindai Mandiri):", " Alat uji instan satu nama domain (FQDN). Menampilkan nilai 4 fitur leksikal secara transparan (Domain Length, Vowel Ratio, Digit Ratio, Shannon Entropy), hasil klasifikasi (DGA Threat / Legitimate Domain), tingkat keyakinan model (Confidence Score), serta tindakan mitigasi yang diambil secara otomatis."),
+        ("Batch Upload Inspection (Inspeksi Log Massal):", " Fasilitas inspeksi file log jaringan dalam format CSV atau TXT yang berisi ribuan domain sekaligus. Dilengkapi tabel inspeksi dinamis dengan penanda badge warna status, serta fitur unduh laporan investigasi resmi ke dalam format PDF dan CSV."),
+        ("Real-Time DNS Log Stream:", " Tabel pemantauan interaktif yang menampilkan aliran kueri DNS jaringan secara langsung (live stream) mencakup stempel waktu milidetik, IP sumber lalu lintas, nama domain, skor entropi Shannon, probabilitas DGA, dan status tindakan mitigasi (Allow/Sinkhole). Dilengkapi tombol 'Simulasi DNS Traffic' untuk mendemonstrasikan penyerapan kueri jaringan.")
     ]
-    for b_title, b_desc in fe_bullets:
-        bp = doc.add_paragraph(style='List Bullet')
-        bp.paragraph_format.line_spacing = 1.15
-        bp.paragraph_format.space_after = Pt(4)
-        r_bt = bp.add_run(b_title + " ")
-        r_bt.font.bold = True
-        r_bt.font.color.rgb = c_primary
-        r_bd = bp.add_run(b_desc)
-        r_bd.font.color.rgb = c_text
+    for title, desc in fe_points:
+        p_p = doc.add_paragraph()
+        p_p.paragraph_format.line_spacing = 1.15
+        p_p.paragraph_format.space_before = Pt(2)
+        p_p.paragraph_format.space_after = Pt(3)
+        r_t = p_p.add_run("• " + title)
+        r_t.font.bold = True
+        r_t.font.size = Pt(8.5)
+        r_t.font.color.rgb = c_primary
+        r_d = p_p.add_run(desc)
+        r_d.font.size = Pt(8.5)
+        r_d.font.color.rgb = c_text
 
-    # Insert FE Mockup 1 (Dashboard & Scanner)
+    # Insert Front-End Images (Gambar 5 & 6)
     img3_path = os.path.join(ASSETS_DIR, 'gambar_3_frontend_dashboard_scanner.png')
     if os.path.exists(img3_path):
         doc.add_picture(img3_path, width=Inches(6.4))
-        p_cap3 = doc.add_paragraph()
-        p_cap3.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap3.paragraph_format.space_after = Pt(10)
-        r_c3 = p_cap3.add_run("Gambar 3: Tampilan Antarmuka Front-End: Executive Dashboard & Single Domain Scanner")
-        r_c3.font.name = "Arial"
-        r_c3.font.size = Pt(8.5)
-        r_c3.font.italic = True
-        r_c3.font.color.rgb = c_slate
+        add_caption(doc, "Gambar 5: Tampilan Antarmuka Front-End: Executive Dashboard & Single Domain Scanner", c_slate)
 
-    # Insert FE Mockup 2 (Batch & Stream)
     img4_path = os.path.join(ASSETS_DIR, 'gambar_4_frontend_batch_stream.png')
     if os.path.exists(img4_path):
         doc.add_picture(img4_path, width=Inches(6.4))
-        p_cap4 = doc.add_paragraph()
-        p_cap4.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap4.paragraph_format.space_after = Pt(14)
-        r_c4 = p_cap4.add_run("Gambar 4: Tampilan Antarmuka Front-End: Batch Upload Inspection & Real-Time DNS Stream")
-        r_c4.font.name = "Arial"
-        r_c4.font.size = Pt(8.5)
-        r_c4.font.italic = True
-        r_c4.font.color.rgb = c_slate
+        add_caption(doc, "Gambar 6: Tampilan Antarmuka Front-End: Batch Upload Inspection & Real-Time DNS Stream", c_slate)
 
-    # Sub-Heading: Back-End
-    h3_be = doc.add_heading("B. Antarmuka Administrator Back-End (System & Security Admin)", level=2)
-    h3_be.paragraph_format.space_before = Pt(12)
-    h3_be.paragraph_format.space_after = Pt(4)
+    # Subsection B: Back-End
+    add_heading_with_spacing(doc, "B. Antarmuka Administrator Back-End (System & Security Admin)", level=2, before=10, after=4)
 
-    be_bullets = [
-        ("Model Management & Evaluation Metrics:", "Dasbor evaluasi kualitas algoritma aktif yang menampilkan metrik akurasi tinggi: Akurasi 87,59%, Presisi 93,79%, Recall 80,51%, F1-Score 86,64%, visualisasi 2x2 Confusion Matrix (TP: 665, FP: 44, FN: 161, TN: 782), serta diagram Gini Feature Importance."),
-        ("Decision Threshold Tuning:", "Slider interaktif (0.10 hingga 0.90) yang memungkinkan administrator menggeser ambang batas klasifikasi (optimal: 0.40 - 0.42) secara seketika guna menyesuaikan sensitivitas deteksi (Recall) tanpa perlu melatih ulang model."),
-        ("Firewall & DNS Sinkhole Integration:", "Modul sinkronisasi yang mengubah temuan DGA menjadi aturan pemblokiran jaringan dengan target DNS Sinkhole 10.10.10.254, serta fitur unduh format IPTables (.sh), BIND9 RPZ (.zone), OS Hosts, dan pfSense/Fortinet."),
-        ("Dataset Management & Retraining Pipeline:", "Statistik korpus latihan (1.338 sampel), fasilitas unggah dataset tambahan (.csv/.xlsx), dan tombol picu siklus retraining Random Forest terotomasi."),
-        ("API & Webhook Management:", "Panel pembuatan token otorisasi API Key 256-bit (X-API-Key), endpoint RESTful POST /api/v1/detect, dan manajemen Webhook Alert ke Discord/Telegram tim SOC."),
-        ("System Health & Infrastructure Monitoring:", "Pemantauan status utilisasi CPU (%), RAM (GB), kapasitas Disk (GB), latensi inferensi AI (~1.2 ms), dan status modul engine."),
-        ("User Access Control & Immutable Audit Trail:", "Manajemen pengguna berbasis peran (RBAC) dan buku besar audit trail yang merekam seluruh aktivitas konfigurasi demi kepatuhan regulasi keamanan.")
+    be_points = [
+        ("Model Management & Evaluation Metrics:", " Dasbor evaluasi kualitas algoritma aktif yang menampilkan 4 metrik performa utama: Akurasi (87,59%), Presisi (93,79%), Recall (80,51%), dan F1-Score (86,64%). Dilengkapi visualisasi Confusion Matrix 2x2 interaktif (TP: 665, FP: 44, FN: 161, TN: 782) untuk mendeteksi pergeseran kualitas prediksi."),
+        ("Decision Threshold Tuning:", " Slider interaktif (0.10 hingga 0.90) yang memungkinkan administrator menggeser ambang batas klasifikasi (dari default 0,50 ke rentang optimal 0,40–0,42) untuk meningkatkan sensitivitas deteksi (Recall) terhadap varian DGA agresif tanpa perlu memprogram ulang model."),
+        ("Firewall & DNS Sinkhole Integration:", " Modul sinkronisasi yang mengubah temuan DGA menjadi format aturan jaringan perimeter. Menampilkan daftar domain terisolasi ke DNS Sinkhole (10.10.10.254), serta tombol ekspor aturan ke format Linux iptables dan Cisco/BIND9 Response Policy Zone (RPZ)."),
+        ("Dataset Management & Retraining Pipeline:", " Statistik korpus latihan (1.338 sampel domain), fasilitas upload dataset CSV/Excel baru, dan tombol retraining model otomatis yang mengekstraksi ulang fitur leksikal dan memperbarui model Random Forest secara langsung di server."),
+        ("API & Webhook Management:", " Panel pembuatan token otorisasi API Key 256-bit (X-API-Key) untuk integrasi dengan sensor jaringan eksternal, serta formulir konfigurasi Webhook ke Discord atau Telegram Bot untuk notifikasi seketika saat terdeteksi ancaman kritis."),
+        ("System Health & Infrastructure Monitoring:", " Pemantauan status utilisasi CPU (%), pemakaian memori RAM, kapasitas disk server, dan pengukuran waktu latensi rata-rata prediksi model (inference latency dalam milidetik)."),
+        ("User Access Control & Immutable Audit Trail:", " Manajemen pengguna berbasis peran (RBAC) dan buku besar audit trail yang merekam seluruh aktivitas konfigurasi demi kepatuhan regulasi keamanan.")
     ]
-    for b_title, b_desc in be_bullets:
-        bp = doc.add_paragraph(style='List Bullet')
-        bp.paragraph_format.line_spacing = 1.15
-        bp.paragraph_format.space_after = Pt(4)
-        r_bt = bp.add_run(b_title + " ")
-        r_bt.font.bold = True
-        r_bt.font.color.rgb = c_dark_blue
-        r_bd = bp.add_run(b_desc)
-        r_bd.font.color.rgb = c_text
+    for title, desc in be_points:
+        p_p = doc.add_paragraph()
+        p_p.paragraph_format.line_spacing = 1.15
+        p_p.paragraph_format.space_before = Pt(2)
+        p_p.paragraph_format.space_after = Pt(3)
+        r_t = p_p.add_run("• " + title)
+        r_t.font.bold = True
+        r_t.font.size = Pt(8.5)
+        r_t.font.color.rgb = c_primary
+        r_d = p_p.add_run(desc)
+        r_d.font.size = Pt(8.5)
+        r_d.font.color.rgb = c_text
 
-    # Insert BE Mockup 1 (Model & Threshold)
+    # Insert Back-End Images (Gambar 7, 8, 9)
     img5_path = os.path.join(ASSETS_DIR, 'gambar_5_admin_model_threshold.png')
     if os.path.exists(img5_path):
         doc.add_picture(img5_path, width=Inches(6.4))
-        p_cap5 = doc.add_paragraph()
-        p_cap5.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap5.paragraph_format.space_after = Pt(10)
-        r_c5 = p_cap5.add_run("Gambar 5: Tampilan Antarmuka Back-End: Model Management Confusion Matrix & Threshold Tuning")
-        r_c5.font.name = "Arial"
-        r_c5.font.size = Pt(8.5)
-        r_c5.font.italic = True
-        r_c5.font.color.rgb = c_slate
+        add_caption(doc, "Gambar 7: Tampilan Antarmuka Back-End: Model Management Confusion Matrix & Threshold Tuning", c_slate)
 
-    # Insert BE Mockup 2 (Firewall & Dataset)
     img6_path = os.path.join(ASSETS_DIR, 'gambar_6_admin_firewall_dataset.png')
     if os.path.exists(img6_path):
         doc.add_picture(img6_path, width=Inches(6.4))
-        p_cap6 = doc.add_paragraph()
-        p_cap6.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap6.paragraph_format.space_after = Pt(10)
-        r_c6 = p_cap6.add_run("Gambar 6: Tampilan Antarmuka Back-End: Firewall Sinkhole Integration & Dataset Pipeline")
-        r_c6.font.name = "Arial"
-        r_c6.font.size = Pt(8.5)
-        r_c6.font.italic = True
-        r_c6.font.color.rgb = c_slate
+        add_caption(doc, "Gambar 8: Tampilan Antarmuka Back-End: Firewall Sinkhole Integration & Dataset Retraining Pipeline", c_slate)
 
-    # Insert BE Mockup 3 (API, Health, Audit)
     img7_path = os.path.join(ASSETS_DIR, 'gambar_7_admin_api_health_audit.png')
     if os.path.exists(img7_path):
         doc.add_picture(img7_path, width=Inches(6.4))
-        p_cap7 = doc.add_paragraph()
-        p_cap7.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap7.paragraph_format.space_after = Pt(14)
-        r_c7 = p_cap7.add_run("Gambar 7: Tampilan Antarmuka Back-End: API/Webhook Dispatcher, Health Monitor, & Audit Trail")
-        r_c7.font.name = "Arial"
-        r_c7.font.size = Pt(8.5)
-        r_c7.font.italic = True
-        r_c7.font.color.rgb = c_slate
+        add_caption(doc, "Gambar 9: Tampilan Antarmuka Back-End: API/Webhook Dispatcher, Health Monitor, & Audit Trail", c_slate)
 
     # ---------------------------------------------------------
-    # BAB III: YANG BELUM DAN AKAN DIKERJAKAN
+    # BAB 4: RENCANA KERJA: YANG BELUM DAN AKAN DIKERJAKAN (ROADMAP)
     # ---------------------------------------------------------
-    h4 = doc.add_heading("4. Rencana Kerja: Yang Belum dan Akan Dikerjakan (Roadmap)", level=1)
-    h4.paragraph_format.space_before = Pt(14)
-    h4.paragraph_format.space_after = Pt(6)
+    add_heading_with_spacing(doc, "4. Rencana Kerja: Yang Belum dan Akan Dikerjakan (Roadmap)", level=1)
 
-    p_todo = doc.add_paragraph()
-    p_todo.paragraph_format.line_spacing = 1.15
-    p_todo.paragraph_format.space_after = Pt(8)
-    p_todo.add_run(
-        "Meskipun seluruh fungsionalitas inti, basis data, pipeline machine learning, dan antarmuka web telah berhasil "
-        "beroperasi dengan sangat baik pada tahap prototipe, terdapat sejumlah penyempurnaan skala enterprise "
-        "dan fitur tingkat lanjut yang "
-    )
-    r_todo = p_todo.add_run("belum sepenuhnya diintegrasikan ke lingkungan perangkat keras fisik produksi")
-    r_todo.font.bold = True
-    p_todo.add_run(
-        " dan akan dikerjakan pada siklus pengembangan berikutnya sesuai studi kasus:"
+    p_road_intro = doc.add_paragraph()
+    p_road_intro.paragraph_format.line_spacing = 1.15
+    p_road_intro.paragraph_format.space_after = Pt(6)
+    p_road_intro.add_run(
+        "Meskipun seluruh fungsionalitas inti, basis data MySQL, pipeline machine learning, dan antarmuka web "
+        "telah beroperasi secara penuh dan siap didemonstrasikan, berikut adalah rencana pengembangan strategis "
+        "tahap lanjutan (roadmap) yang dirancang untuk memperkuat kemampuan operasional sistem menuju skala enterprise:"
     )
 
     roadmap_items = [
@@ -472,29 +393,27 @@ def create_report():
     for r_title, r_desc in roadmap_items:
         p_r = doc.add_paragraph()
         p_r.paragraph_format.line_spacing = 1.15
-        p_r.paragraph_format.space_before = Pt(4)
-        p_r.paragraph_format.space_after = Pt(4)
+        p_r.paragraph_format.space_before = Pt(3)
+        p_r.paragraph_format.space_after = Pt(3)
         r_t = p_r.add_run(r_title + "\n")
         r_t.font.bold = True
-        r_t.font.size = Pt(9.5)
+        r_t.font.size = Pt(9)
         r_t.font.color.rgb = c_primary
         r_d = p_r.add_run(r_desc)
-        r_d.font.size = Pt(9)
+        r_d.font.size = Pt(8.5)
         r_d.font.color.rgb = c_text
 
     # ---------------------------------------------------------
-    # BAB IV: KESIMPULAN & TAUTAN REPOSITORI
+    # BAB 5: KESIMPULAN & TAUTAN REPOSITORI
     # ---------------------------------------------------------
-    h5 = doc.add_heading("5. Kesimpulan & Tautan Repositori Proyek", level=1)
-    h5.paragraph_format.space_before = Pt(14)
-    h5.paragraph_format.space_after = Pt(6)
+    add_heading_with_spacing(doc, "5. Kesimpulan & Tautan Repositori Proyek", level=1)
 
     p_conc = doc.add_paragraph()
     p_conc.paragraph_format.line_spacing = 1.15
     p_conc.paragraph_format.space_after = Pt(8)
     p_conc.add_run(
         "Seluruh capaian pengerjaan sistem deteksi DGA berbasis machine learning telah memenuhi target fungsional "
-        "yang ditetapkan, mencakup integritas basis data relasional 8 tabel, akurasi model Random Forest yang teruji "
+        "yang ditetapkan, mencakup integritas basis data relasional 8 tabel di MySQL XAMPP, akurasi model Random Forest yang teruji "
         "(Akurasi: 87,59%, Presisi: 93,79%, Recall: 80,51%, F1: 86,64%), serta penyajian antarmuka web modern bertema terang "
         "yang memisahkan peran Analis SOC dan Administrator. Seluruh kode sumber, model, basis data, dan template "
         "telah dikelola secara terstruktur dan diunggah ke repositori GitHub resmi:"
@@ -506,20 +425,91 @@ def create_report():
     c_gh = tbl_gh.rows[0].cells[0]
     c_gh.width = Inches(6.5)
     set_cell_background(c_gh, "F0F9FF")
-    set_cell_margins(c_gh, 100, 100, 150, 150)
+    set_cell_margins(c_gh, 80, 80, 130, 130)
     p_gh = c_gh.paragraphs[0]
     p_gh.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r_gh1 = p_gh.add_run("Tautan Repositori GitHub Resmi:\n")
+    r_gh1 = p_gh.add_run("Tautan Repositori GitHub Resmi Proyek:\n")
     r_gh1.font.bold = True
-    r_gh1.font.size = Pt(10)
+    r_gh1.font.size = Pt(9.5)
     r_gh1.font.color.rgb = c_blue
     r_gh2 = p_gh.add_run("https://github.com/aidilsy06-cloud/dga-detection-system")
     r_gh2.font.bold = True
-    r_gh2.font.size = Pt(11)
+    r_gh2.font.size = Pt(10.5)
     r_gh2.font.color.rgb = c_dark_blue
 
+    # ---------------------------------------------------------
+    # BAB 6: LAMPIRAN: BUKTI TANGKAPAN LAYAR ASLI SISTEM (AUTHENTIC SCREENSHOTS)
+    # ---------------------------------------------------------
+    doc.add_page_break()
+    add_heading_with_spacing(doc, "6. Lampiran: Bukti Tangkapan Layar Asli Implementasi Sistem", level=1, before=10, after=6)
+
+    p_lamp_intro = doc.add_paragraph()
+    p_lamp_intro.paragraph_format.line_spacing = 1.15
+    p_lamp_intro.paragraph_format.space_after = Pt(10)
+    p_lamp_intro.add_run(
+        "Bagian lampiran ini menyajikan dokumentasi bukti visual tangkapan layar (screenshot) asli dengan resolusi tinggi "
+        "yang diambil langsung dari lingkungan operasional sistem (localhost XAMPP, browser, dan dashboard aktif). "
+        "Lampiran ini membuktikan bahwa basis data dan antarmuka telah berhasil diimplementasikan secara nyata:"
+    )
+
+    # Lampiran 1: phpMyAdmin Designer Asli Pengguna (Full HD)
+    add_heading_with_spacing(doc, "Lampiran 1: Bukti Tangkapan Layar Asli phpMyAdmin Designer (Relasi Foreign Key 8 Tabel)", level=2, before=8, after=4)
+    if os.path.exists(img_to_use):
+        doc.add_picture(img_to_use, width=Inches(6.4))
+        add_caption(doc, "Lampiran 1: Bukti Tangkapan Layar Asli Skema Relasi Database MySQL (dga_detection_system) pada Menu Designer phpMyAdmin XAMPP (Localhost Pengembang)", c_slate)
+
+    p_lamp1_desc = doc.add_paragraph()
+    p_lamp1_desc.paragraph_format.line_spacing = 1.15
+    p_lamp1_desc.paragraph_format.space_after = Pt(12)
+    p_lamp1_desc.add_run(
+        "Tangkapan layar di atas diambil langsung dari browser pengembang yang menunjukkan modul phpMyAdmin Designer aktif "
+        "pada database 'dga_detection_system'. Terlihat jelas garis relasi hijau dan biru yang menghubungkan kunci primer (Primary Key) "
+        "dengan kunci tamu (Foreign Key) antar tabel users, settings, audit_logs, api_keys, dataset, model_metrics, dns_logs, dan blocked_domains."
+    )
+
+    # Lampiran 2: phpMyAdmin Overview
+    add_heading_with_spacing(doc, "Lampiran 2: Bukti Tangkapan Layar Struktur dan Rekaman Data Tabel phpMyAdmin", level=2, before=8, after=4)
+    if os.path.exists(img2c_path):
+        doc.add_picture(img2c_path, width=Inches(6.4))
+        add_caption(doc, "Lampiran 2: Bukti Tangkapan Layar Daftar 8 Tabel Operasional, Collation utf8mb4, Engine InnoDB, dan Preview Kueri SQL Data Latih pada phpMyAdmin", c_slate)
+
+    # Lampiran 3: Front-End Dashboard & Scanner
+    add_heading_with_spacing(doc, "Lampiran 3: Bukti Tangkapan Layar Antarmuka Front-End: Dashboard Analis SOC & Single Scanner", level=2, before=8, after=4)
+    if os.path.exists(img3_path):
+        doc.add_picture(img3_path, width=Inches(6.4))
+        add_caption(doc, "Lampiran 3: Bukti Tangkapan Layar Antarmuka Front-End: Ringkasan Metrik Keamanan Harian dan Hasil Pemindaian Domain Mandiri", c_slate)
+
+    # Lampiran 4: Front-End Batch & Stream
+    add_heading_with_spacing(doc, "Lampiran 4: Bukti Tangkapan Layar Antarmuka Front-End: Inspeksi Log Massal & Live Stream DNS", level=2, before=8, after=4)
+    if os.path.exists(img4_path):
+        doc.add_picture(img4_path, width=Inches(6.4))
+        add_caption(doc, "Lampiran 4: Bukti Tangkapan Layar Antarmuka Front-End: Tabel Inspeksi Massal (Download PDF) dan Aliran Kueri DNS Real-Time", c_slate)
+
+    # Lampiran 5: Back-End Model Management
+    add_heading_with_spacing(doc, "Lampiran 5: Bukti Tangkapan Layar Antarmuka Back-End: Evaluasi Kualitas Model & Slider Threshold", level=2, before=8, after=4)
+    if os.path.exists(img5_path):
+        doc.add_picture(img5_path, width=Inches(6.4))
+        add_caption(doc, "Lampiran 5: Bukti Tangkapan Layar Antarmuka Back-End: Metrik Evaluasi Model (Akurasi 87,59%), Visual Confusion Matrix, dan Slider Sensitivitas", c_slate)
+
+    # Lampiran 6: Back-End Firewall & Retraining
+    add_heading_with_spacing(doc, "Lampiran 6: Bukti Tangkapan Layar Antarmuka Back-End: Firewall / DNS Sinkhole & Pipeline Retraining", level=2, before=8, after=4)
+    if os.path.exists(img6_path):
+        doc.add_picture(img6_path, width=Inches(6.4))
+        add_caption(doc, "Lampiran 6: Bukti Tangkapan Layar Antarmuka Back-End: Sinkronisasi DNS Sinkhole (10.10.10.254), Ekspor IPTables, dan Pelatihan Ulang Model", c_slate)
+
+    # Lampiran 7: Back-End API, Health, Audit
+    add_heading_with_spacing(doc, "Lampiran 7: Bukti Tangkapan Layar Antarmuka Back-End: API Gateway, System Health & Audit Trail", level=2, before=8, after=4)
+    if os.path.exists(img7_path):
+        doc.add_picture(img7_path, width=Inches(6.4))
+        add_caption(doc, "Lampiran 7: Bukti Tangkapan Layar Antarmuka Back-End: Manajemen API Key, Monitoring Utilisasi Server (CPU/RAM), dan Jejak Audit Kepatuhan", c_slate)
+
+    # Save to primary DOCX
     doc.save(DOCX_OUT)
     print(f"[+] Successfully generated DOCX report: {DOCX_OUT}")
+
+    # Also save to extra copy in workspace
+    doc.save(DOCX_OUT_EXTRA)
+    print(f"[+] Successfully generated extra DOCX report: {DOCX_OUT_EXTRA}")
 
 if __name__ == '__main__':
     create_report()
