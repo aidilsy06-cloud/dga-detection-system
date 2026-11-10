@@ -239,6 +239,19 @@ def create_report():
         r_c2.font.italic = True
         r_c2.font.color.rgb = c_slate
 
+    # Insert DB Browser Screenshot
+    img2b_path = os.path.join(ASSETS_DIR, 'gambar_2b_sqlite_db_browser.png')
+    if os.path.exists(img2b_path):
+        doc.add_picture(img2b_path, width=Inches(6.4))
+        p_cap2b = doc.add_paragraph()
+        p_cap2b.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_cap2b.paragraph_format.space_after = Pt(14)
+        r_c2b = p_cap2b.add_run("Gambar 2b: Tampilan Skema Struktur Tabel dan Penjelajah Data (Database Browser) SQLite (database.db)")
+        r_c2b.font.name = "Arial"
+        r_c2b.font.size = Pt(8.5)
+        r_c2b.font.italic = True
+        r_c2b.font.color.rgb = c_slate
+
     # ---------------------------------------------------------
     # BAB II: PROGRESS TAMPILAN / INTERFACE
     # ---------------------------------------------------------
