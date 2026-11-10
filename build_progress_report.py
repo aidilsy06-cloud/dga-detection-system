@@ -266,6 +266,19 @@ def create_report():
         r_c2c.font.italic = True
         r_c2c.font.color.rgb = c_slate
 
+    # Insert phpMyAdmin Designer Foreign Keys Screenshot
+    img2d_path = os.path.join(ASSETS_DIR, 'gambar_2d_phpmyadmin_designer_relasi.png')
+    if os.path.exists(img2d_path):
+        doc.add_picture(img2d_path, width=Inches(6.4))
+        p_cap2d = doc.add_paragraph()
+        p_cap2d.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_cap2d.paragraph_format.space_after = Pt(14)
+        r_c2d = p_cap2d.add_run("Gambar 2d: Tampilan Skema Relasi Antar Tabel (Foreign Key Constraints) pada phpMyAdmin Designer")
+        r_c2d.font.name = "Arial"
+        r_c2d.font.size = Pt(8.5)
+        r_c2d.font.italic = True
+        r_c2d.font.color.rgb = c_slate
+
     # ---------------------------------------------------------
     # BAB II: PROGRESS TAMPILAN / INTERFACE
     # ---------------------------------------------------------
