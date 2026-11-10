@@ -28,12 +28,16 @@ def apply_relations():
     add_col_if_missing("dataset", "uploaded_by_user_id INT NULL", "uploaded_by_user_id")
     add_col_if_missing("blocked_domains", "dns_log_id INT NULL AFTER id", "dns_log_id")
     add_col_if_missing("dns_logs", "api_key_id INT NULL AFTER id", "api_key_id")
+    add_col_if_missing("settings", "updated_by_user_id INT NULL AFTER value", "updated_by_user_id")
 
     print("[3] Populating initial relational linkage data...")
 
     # Link audit_logs to users
     cur.execute("UPDATE audit_logs SET user_id = 2 WHERE user = 'admin' OR user LIKE '%admin%'")
     cur.execute("UPDATE audit_logs SET user_id = 1 WHERE user = 'analyst' OR user_id IS NULL")
+
+    # Link settings to admin user (id=2)
+    cur.execute("UPDATE settings SET updated_by_user_id = 2 WHERE updated_by_user_id IS NULL")
 
     # Link api_keys to admin user (id=2)
     cur.execute("UPDATE api_keys SET user_id = 2 WHERE user_id IS NULL")
@@ -63,7 +67,8 @@ def apply_relations():
         ("model_metrics", "fk_model_user", "FOREIGN KEY (trained_by_user_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE"),
         ("dataset", "fk_dataset_user", "FOREIGN KEY (uploaded_by_user_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE"),
         ("blocked_domains", "fk_blocked_dns_log", "FOREIGN KEY (dns_log_id) REFERENCES dns_logs(id) ON DELETE SET NULL ON UPDATE CASCADE"),
-        ("dns_logs", "fk_dns_api_key", "FOREIGN KEY (api_key_id) REFERENCES api_keys(id) ON DELETE SET NULL ON UPDATE CASCADE")
+        ("dns_logs", "fk_dns_api_key", "FOREIGN KEY (api_key_id) REFERENCES api_keys(id) ON DELETE SET NULL ON UPDATE CASCADE"),
+        ("settings", "fk_settings_user", "FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE")
     ]
 
     for table, fk_name, fk_rule in fk_definitions:
